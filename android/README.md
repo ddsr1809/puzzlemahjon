@@ -6,14 +6,24 @@ de niveles con solución garantizada (tres dificultades) y las pruebas.
 
 ## Cómo ejecutarlo
 
-Requisitos: JDK 17 o superior. Android Studio ya lo incluye.
+Requisitos: un JDK entre 17 y 24 para ejecutar Gradle 8.14.3 (por ejemplo, el JDK 21
+que trae Android Studio). Con JDK 25, Android Studio muestra «Incompatible Gradle JVM
+version»: pulsa *Apply compatible Gradle JDK configuration and sync*. En el hito 2 el
+proyecto pasará a Gradle 9, que sí admite JDK 25.
 
 ```
 ./gradlew :core:test
 ```
 
-En Android Studio: abre la carpeta del proyecto, espera a que sincronice y ejecuta las
-pruebas de `core/src/test` con el botón derecho → *Run tests*.
+Ejecútalo desde la carpeta `android/` (en Windows, `gradlew.bat :core:test`).
+
+En Android Studio: abre la carpeta `android/`, espera a que sincronice y, en el panel
+Gradle de la derecha, haz doble clic en **core → Tasks → verification → test**. El informe
+queda en `core/build/reports/tests/test/index.html`.
+
+Todavía no hay app de Android (llega en el hito 2), así que el botón verde de ejecutar
+da «Module not specified». Si Android Studio creó una configuración «app», bórrala en
+*Run → Edit Configurations…*.
 
 Son 50 pruebas y tardan unos segundos. En cada ejecución se generan y resuelven más de
 1.500 niveles.
