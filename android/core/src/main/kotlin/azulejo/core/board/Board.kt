@@ -68,6 +68,20 @@ class Board private constructor(
 
     fun remove(a: Int, b: Int): Board = remove(Move.of(a, b))
 
+    /**
+     * El mismo tablero, con las mismas fichas presentes, pero con otros dibujos.
+     * [faces] trae un dibujo por ficha, en orden de id; los de fichas ya retiradas no importan.
+     * Lo usa barajar.
+     */
+    fun withFaces(faces: List<Int>): Board {
+        require(faces.size == tiles.size) { "Hay ${tiles.size} fichas y ${faces.size} dibujos" }
+        val newTiles = tiles.map { it.copy(face = faces[it.id]) }
+        return Board(newTiles, geometry, present.copyOf(), remainingCount)
+    }
+
+    /** Qué fichas siguen en el tablero, indexado por id. Es una copia. */
+    fun presence(): BooleanArray = present.copyOf()
+
     /** Aplica una lista de movimientos en orden. Útil para reproducir una solución. */
     fun play(moves: Iterable<Move>): Board = moves.fold(this) { board, move -> board.remove(move) }
 

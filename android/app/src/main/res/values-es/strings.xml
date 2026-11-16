@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Azulejo Mahjong</string>
+
+    <string name="new_game">Nueva partida</string>
+    <string name="difficulty_easy">Fácil</string>
+    <string name="difficulty_medium">Media</string>
+    <string name="difficulty_hard">Difícil</string>
+    <string name="tiles_left">Quedan %1$d fichas</string>
+    <string name="loading">Preparando el tablero…</string>
+
+    <string name="action_undo">Deshacer</string>
+    <string name="action_hint">Pista</string>
+    <string name="action_shuffle">Barajar</string>
+    <string name="action_restart">Reiniciar</string>
+
+    <string name="notice_tile_blocked">Esa ficha no está libre. Elige una con un lado abierto y nada encima.</string>
+    <string name="notice_no_match">Esas fichas no son iguales.</string>
+    <string name="notice_no_hints">No te quedan pistas.</string>
+    <string name="notice_needs_undo">Este tablero ya no tiene solución. Deshaz algunos pares.</string>
+    <string name="notice_stuck">No quedan parejas. Baraja, deshaz o reinicia.</string>
+    <string name="notice_no_shuffles">No te quedan barajadas. Deshaz o reinicia.</string>
+    <string name="notice_shuffle_impossible">Estas fichas no se pueden barajar. Deshaz o reinicia.</string>
+
+    <string name="win_title">¡Tablero completado!</string>
+    <string name="win_text">¡Bien hecho! ¿Otra partida?</string>
+    <string name="play_again">Jugar otra</string>
+</resources>

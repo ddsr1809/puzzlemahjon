@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 java {
@@ -16,12 +16,13 @@ kotlin {
 }
 
 dependencies {
-    // Las pruebas solo usan kotlin.test, así que no dependen de una versión concreta de JUnit.
-    testImplementation(kotlin("test"))
+    // Las pruebas solo usan kotlin.test. Se ejecutan con JUnit 4, que Gradle 9 sigue
+    // soportando sin declarar el lanzador de JUnit Platform.
+    testImplementation(libs.kotlin.test.junit)
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnit()
     testLogging {
         events("failed", "skipped")
         showStandardStreams = false

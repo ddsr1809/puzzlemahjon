@@ -1,4 +1,6 @@
-// Versiones de los plugins, en un solo sitio. Cada módulo aplica los que necesita.
+// Versiones de los plugins: gradle/libs.versions.toml. Cada módulo aplica los que necesita.
 plugins {
-    kotlin("jvm") version "2.2.21" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }

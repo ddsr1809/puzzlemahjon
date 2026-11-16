@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nombre provisional: el definitivo se decide antes de publicar. -->
+    <string name="app_name">Azulejo Mahjong</string>
+
+    <string name="new_game">New game</string>
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+    <string name="tiles_left">%1$d tiles left</string>
+    <string name="loading">Preparing the board…</string>
+
+    <string name="action_undo">Undo</string>
+    <string name="action_hint">Hint</string>
+    <string name="action_shuffle">Shuffle</string>
+    <string name="action_restart">Restart</string>
+
+    <string name="notice_tile_blocked">That tile is not free. Pick a tile with an open side and nothing on top.</string>
+    <string name="notice_no_match">Those tiles don\'t match.</string>
+    <string name="notice_no_hints">No hints left.</string>
+    <string name="notice_needs_undo">This board can no longer be cleared. Undo a few pairs.</string>
+    <string name="notice_stuck">No pairs left. Shuffle, undo or restart.</string>
+    <string name="notice_no_shuffles">No shuffles left. Undo or restart.</string>
+    <string name="notice_shuffle_impossible">These tiles can\'t be shuffled. Undo or restart.</string>
+
+    <string name="win_title">Board cleared!</string>
+    <string name="win_text">Well done. Ready for another one?</string>
+    <string name="play_again">Play again</string>
+</resources>
