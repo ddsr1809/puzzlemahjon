@@ -10,6 +10,11 @@ import azulejo.core.generator.Difficulty
  * Todas caben en [MAX_COLUMNS] × [MAX_ROWS] fichas. Las coordenadas van en
  * medias fichas (ver [azulejo.core.board.Position]): `block(x, y, columnas, filas, capa)`.
  *
+ * Hay dos juegos de plantillas por dificultad. Las normales ocupan toda la pantalla. Las
+ * compactas caben en [COMPACT_COLUMNS] × [COMPACT_ROWS] fichas: al haber menos columnas y
+ * filas, cada ficha se dibuja alrededor de un 30 % más grande. Son las del tamaño de ficha
+ * «Grande».
+ *
  * Cambiar una plantilla ya publicada cambia los niveles y retos diarios que la usan.
  * Para variar un diseño, añade una plantilla nueva con otro id.
  */
@@ -17,6 +22,9 @@ object LayoutCatalog {
 
     const val MAX_COLUMNS = 6
     const val MAX_ROWS = 8
+
+    const val COMPACT_COLUMNS = 5
+    const val COMPACT_ROWS = 6
 
     // ---- Fáciles: 36 a 48 fichas ----
 
@@ -118,16 +126,103 @@ object LayoutCatalog {
         block(4, 6, columns = 2, rows = 2, z = 2)
     }
 
+    // ---- Compactas fáciles: 36 a 44 fichas. El patio, con 4 columnas, también lo es. ----
+
+    /** 40 fichas, 2 capas. Tablero lleno con una terraza alargada en el centro. */
+    val terraza: Layout = layout("terraza") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(3, 1, columns = 2, rows = 5, z = 1)
+    }
+
+    /** 44 fichas, 2 capas. Tablero lleno con tres travesaños unidos por el centro. */
+    val celosia: Layout = layout("celosia") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(1, 1, columns = 4, rows = 1, z = 1)
+        block(1, 5, columns = 4, rows = 1, z = 1)
+        block(1, 9, columns = 4, rows = 1, z = 1)
+        tile(4, 3, 1)
+        tile(4, 7, 1)
+    }
+
+    // ---- Compactas medias: 56 a 60 fichas ----
+
+    /** 56 fichas, 3 capas. Tres terrazas, cada una más pequeña que la de debajo. */
+    val zigurat: Layout = layout("zigurat") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(1, 1, columns = 4, rows = 5, z = 1)
+        block(3, 3, columns = 2, rows = 3, z = 2)
+    }
+
+    /** 56 fichas, 3 capas. Una torre en cada esquina y otra en el centro. */
+    val torreon: Layout = layout("torreon") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(0, 0, columns = 2, rows = 2, z = 1)
+        block(6, 0, columns = 2, rows = 2, z = 1)
+        block(0, 8, columns = 2, rows = 2, z = 1)
+        block(6, 8, columns = 2, rows = 2, z = 1)
+        block(3, 4, columns = 2, rows = 2, z = 1)
+        tile(1, 1, 2)
+        tile(7, 1, 2)
+        tile(1, 9, 2)
+        tile(7, 9, 2)
+        block(3, 5, columns = 2, rows = 1, z = 2)
+    }
+
+    /** 60 fichas, 3 capas. Terraza con dos barandillas y dos fichas sueltas en el centro. */
+    val galeria: Layout = layout("galeria") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(1, 1, columns = 4, rows = 5, z = 1)
+        block(1, 2, columns = 1, rows = 4, z = 2)
+        block(7, 2, columns = 1, rows = 4, z = 2)
+        tile(4, 4, 2)
+        tile(4, 6, 2)
+    }
+
+    // ---- Compactas difíciles: 72 fichas ----
+
+    /** 72 fichas, 4 capas. Pirámide alta sobre un tablero lleno. */
+    val ciudadela: Layout = layout("ciudadela") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(1, 0, columns = 4, rows = 6, z = 1)
+        block(2, 2, columns = 3, rows = 4, z = 2)
+        block(3, 3, columns = 2, rows = 3, z = 3)
+    }
+
+    /** 72 fichas, 4 capas. Dos terrazas casi iguales y una cima estrecha. */
+    val cumbre: Layout = layout("cumbre") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(1, 1, columns = 4, rows = 5, z = 1)
+        block(1, 1, columns = 4, rows = 4, z = 2)
+        block(3, 3, columns = 2, rows = 3, z = 3)
+    }
+
+    /** 72 fichas, 4 capas. Pirámide pegada a los lados, con una fila suelta delante. */
+    val alcazar: Layout = layout("alcazar") {
+        block(0, 0, columns = 5, rows = 6, z = 0)
+        block(0, 1, columns = 5, rows = 4, z = 1)
+        block(1, 10, columns = 4, rows = 1, z = 1)
+        block(1, 2, columns = 4, rows = 3, z = 2)
+        block(2, 3, columns = 3, rows = 2, z = 3)
+    }
+
     val easy: List<Layout> = listOf(patio, cruz, fuente)
     val medium: List<Layout> = listOf(portal, rombo, torres)
     val hard: List<Layout> = listOf(piramide, escalera, mosaico)
 
-    val all: List<Layout> = easy + medium + hard
+    val compactEasy: List<Layout> = listOf(patio, terraza, celosia)
+    val compactMedium: List<Layout> = listOf(zigurat, torreon, galeria)
+    val compactHard: List<Layout> = listOf(ciudadela, cumbre, alcazar)
 
-    fun forDifficulty(difficulty: Difficulty): List<Layout> = when (difficulty) {
-        Difficulty.EASY -> easy
-        Difficulty.MEDIUM -> medium
-        Difficulty.HARD -> hard
+    val all: List<Layout> = (easy + medium + hard + compactEasy + compactMedium + compactHard).distinct()
+
+    /**
+     * Plantillas de una dificultad. Con [compact], las que caben en
+     * [COMPACT_COLUMNS] × [COMPACT_ROWS] fichas, para el tamaño de ficha «Grande».
+     */
+    fun forDifficulty(difficulty: Difficulty, compact: Boolean = false): List<Layout> = when (difficulty) {
+        Difficulty.EASY -> if (compact) compactEasy else easy
+        Difficulty.MEDIUM -> if (compact) compactMedium else medium
+        Difficulty.HARD -> if (compact) compactHard else hard
     }
 
     fun byId(id: String): Layout =

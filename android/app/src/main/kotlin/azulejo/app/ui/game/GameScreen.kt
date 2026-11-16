@@ -19,32 +19,54 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
+import azulejo.app.data.AppLanguage
+import azulejo.app.data.TileSize
+import azulejo.app.tiles.TilePalette
+import azulejo.app.ui.settings.SettingsDialog
+import azulejo.app.ui.theme.AzulejoTheme
 import azulejo.core.generator.Difficulty
+import azulejo.core.session.GameSession
 import azulejo.core.session.GameStatus
 
+/**
+ * @param onLanguageChange cambiar de idioma obliga a recrear la actividad, así que lo
+ *   resuelve quien la tiene a mano (`MainActivity`).
+ */
 @Composable
-fun GameScreen(viewModel: GameViewModel) {
+fun GameScreen(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit) {
     val state by viewModel.state.collectAsState()
-    GameContent(
-        state = state,
-        onNewGame = viewModel::newGame,
-        onTileTap = viewModel::onTileTap,
-        onUndo = viewModel::undo,
-        onHint = viewModel::hint,
-        onShuffle = viewModel::shuffle,
-        onRestart = viewModel::restart,
-    )
+    AzulejoTheme(highContrast = state.settings.highContrast) {
+        GameContent(
+            state = state,
+            onNewGame = viewModel::newGame,
+            onTileTap = viewModel::onTileTap,
+            onUndo = viewModel::undo,
+            onHint = viewModel::hint,
+            onShuffle = viewModel::shuffle,
+            onRestart = viewModel::restart,
+            onTileSize = viewModel::setTileSize,
+            onHighContrast = viewModel::setHighContrast,
+            onLanguage = onLanguageChange,
+        )
+    }
 }
 
 @Composable
@@ -56,8 +78,15 @@ fun GameContent(
     onHint: () -> Unit,
     onShuffle: () -> Unit,
     onRestart: () -> Unit,
+    onTileSize: (TileSize) -> Unit,
+    onHighContrast: (Boolean) -> Unit,
+    onLanguage: (AppLanguage) -> Unit,
 ) {
     val session = state.session
+    // Ajustes sigue abierto tras cambiar de idioma, que recrea la actividad.
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    // Dificultad pedida con una partida a medias, a la espera de que el jugador confirme.
+    var pendingDifficulty by remember { mutableStateOf<Difficulty?>(null) }
 
     Column(
         modifier = Modifier
@@ -66,7 +95,16 @@ fun GameContent(
             .safeDrawingPadding()
             .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
-        DifficultyBar(selected = state.difficulty, enabled = !state.busy || session == null, onSelect = onNewGame)
+        TopBar(
+            difficulty = state.difficulty,
+            // Hasta que se han leído los ajustes y la partida guardada no hay nada que cambiar.
+            loaded = session != null,
+            enabled = session != null && !state.busy,
+            onSelect = { difficulty ->
+                if (session != null && isInProgress(session)) pendingDifficulty = difficulty else onNewGame(difficulty)
+            },
+            onSettings = { showSettings = true },
+        )
 
         Box(
             modifier = Modifier
@@ -79,13 +117,19 @@ fun GameContent(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(Modifier.height(12.dp))
-                    Text(stringResource(R.string.loading), fontSize = 18.sp)
+                    Text(
+                        text = stringResource(R.string.loading),
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
                 }
             } else {
                 BoardView(
                     board = session.board,
                     selected = session.selected,
                     hint = session.hint,
+                    palette = TilePalette.of(state.settings.highContrast),
+                    description = stringResource(R.string.board_description, session.board.remainingCount),
                     onTileTap = onTileTap,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -103,6 +147,7 @@ fun GameContent(
                 fontSize = 18.sp,
                 fontWeight = if (state.notice != null) FontWeight.Bold else FontWeight.Normal,
                 textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
             )
 
             ActionBar(
@@ -115,44 +160,97 @@ fun GameContent(
                 onShuffle = onShuffle,
                 onRestart = onRestart,
             )
-
-            if (session.status == GameStatus.WON) {
-                AlertDialog(
-                    onDismissRequest = {},
-                    title = { Text(stringResource(R.string.win_title)) },
-                    text = { Text(stringResource(R.string.win_text), fontSize = 18.sp) },
-                    confirmButton = {
-                        Button(onClick = { onNewGame(state.difficulty) }) {
-                            Text(stringResource(R.string.play_again), fontSize = 18.sp)
-                        }
-                    },
-                )
-            }
         }
+    }
+
+    if (session != null && session.status == GameStatus.WON) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.win_title)) },
+            text = { Text(stringResource(R.string.win_text), fontSize = 18.sp) },
+            confirmButton = {
+                Button(onClick = { onNewGame(state.difficulty) }, modifier = Modifier.heightIn(min = 52.dp)) {
+                    Text(stringResource(R.string.play_again), fontSize = 18.sp)
+                }
+            },
+        )
+    }
+
+    pendingDifficulty?.let { difficulty ->
+        AlertDialog(
+            onDismissRequest = { pendingDifficulty = null },
+            title = { Text(stringResource(R.string.confirm_new_title)) },
+            text = { Text(stringResource(R.string.confirm_new_text), fontSize = 18.sp) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        pendingDifficulty = null
+                        onNewGame(difficulty)
+                    },
+                    modifier = Modifier.heightIn(min = 52.dp),
+                ) {
+                    Text(stringResource(R.string.confirm_new_yes), fontSize = 18.sp)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { pendingDifficulty = null }, modifier = Modifier.heightIn(min = 52.dp)) {
+                    Text(stringResource(R.string.confirm_new_no), fontSize = 18.sp)
+                }
+            },
+        )
+    }
+
+    if (showSettings) {
+        SettingsDialog(
+            settings = state.settings,
+            onTileSize = onTileSize,
+            onHighContrast = onHighContrast,
+            onLanguage = onLanguage,
+            onClose = { showSettings = false },
+        )
     }
 }
 
+/** Hay algo que perder: ya se ha retirado algún par y la partida no ha terminado. */
+private fun isInProgress(session: GameSession): Boolean =
+    session.status != GameStatus.WON && session.board.remainingCount < session.board.tiles.size
+
 @Composable
-private fun DifficultyBar(selected: Difficulty, enabled: Boolean, onSelect: (Difficulty) -> Unit) {
+private fun TopBar(
+    difficulty: Difficulty,
+    loaded: Boolean,
+    enabled: Boolean,
+    onSelect: (Difficulty) -> Unit,
+    onSettings: () -> Unit,
+) {
     Column(Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.new_game),
-            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = stringResource(R.string.new_game),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp),
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            TextButton(onClick = onSettings, enabled = loaded, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.action_settings), fontSize = 18.sp)
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            for (difficulty in Difficulty.entries) {
-                val label = stringResource(difficulty.labelRes())
+            for (option in Difficulty.entries) {
+                val label = stringResource(option.labelRes())
+                val isSelected = option == difficulty
                 val buttonModifier = Modifier
                     .weight(1f)
                     .heightIn(min = 52.dp)
-                if (difficulty == selected) {
-                    Button(onClick = { onSelect(difficulty) }, enabled = enabled, modifier = buttonModifier) {
+                    .semantics { this.selected = isSelected }
+                if (isSelected) {
+                    Button(onClick = { onSelect(option) }, enabled = enabled, modifier = buttonModifier) {
                         Text(label, fontSize = 18.sp)
                     }
                 } else {
-                    OutlinedButton(onClick = { onSelect(difficulty) }, enabled = enabled, modifier = buttonModifier) {
+                    OutlinedButton(onClick = { onSelect(option) }, enabled = enabled, modifier = buttonModifier) {
                         Text(label, fontSize = 18.sp)
                     }
                 }

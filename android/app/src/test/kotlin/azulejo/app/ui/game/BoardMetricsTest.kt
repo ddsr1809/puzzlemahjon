@@ -74,9 +74,32 @@ class BoardMetricsTest {
     }
 
     @Test
-    fun `los 36 dibujos tienen aspecto distinto`() {
-        val looks = (0 until LevelGenerator.DEFAULT_FACE_COUNT).map { FaceLook.of(it) }
-        assertEquals(36, looks.toSet().size)
-        assertTrue(looks.all { it.family in 0 until FaceLook.FAMILIES && it.rank in 1..FaceLook.RANKS })
+    fun `las plantillas compactas dan fichas claramente mas grandes`() {
+        fun tileWidth(layout: azulejo.core.board.Layout): Float =
+            BoardMetrics.fit(areaWidth, areaHeight, layout.positions).faceRect(layout.positions.first()).width
+
+        for (difficulty in Difficulty.entries) {
+            val normal = LayoutCatalog.forDifficulty(difficulty).filter { it.columns > LayoutCatalog.COMPACT_COLUMNS }
+            val compact = LayoutCatalog.forDifficulty(difficulty, compact = true)
+            val biggestNormal = normal.maxOf { tileWidth(it) }
+            for (layout in compact) {
+                val width = tileWidth(layout)
+                assertTrue(width >= biggestNormal * 1.15f, "${layout.id}: $width px frente a $biggestNormal px")
+                // Más de 60 dp a densidad 3.
+                assertTrue(width >= 60f * 3f, "${layout.id}: ficha de $width px")
+            }
+        }
+    }
+
+    @Test
+    fun `en una pantalla baja las fichas compactas siguen pasando del minimo tactil`() {
+        // Teléfono antiguo de 360 × 640 dp a densidad 2: quedan unos 720 × 800 px para el tablero.
+        val minimum = 48f * 2f
+        for (difficulty in Difficulty.entries) {
+            for (layout in LayoutCatalog.forDifficulty(difficulty, compact = true)) {
+                val face = BoardMetrics.fit(720f, 800f, layout.positions).faceRect(layout.positions.first())
+                assertTrue(face.width >= minimum, "${layout.id}: ficha de ${face.width} px")
+            }
+        }
     }
 }

@@ -201,6 +201,32 @@ class GameSession private constructor(
         return copy(hintsLeft = hintsLeft + hints, shufflesLeft = shufflesLeft + shuffles)
     }
 
+    // ---------- Guardar ----------
+
+    /** Foto de la partida para guardarla. [restore] hace el camino contrario. */
+    fun snapshot(): GameSnapshot {
+        val boards = history + board
+        val moves = ArrayList<Move>(history.size)
+        for (i in 1 until boards.size) {
+            // Entre un tablero y el siguiente solo cambia el par retirado.
+            val removed = boards[i - 1].tiles.map { it.id }
+                .filter { boards[i - 1].isOnBoard(it) && !boards[i].isOnBoard(it) }
+            moves += Move.of(removed[0], removed[1])
+        }
+        val base = boards.first()
+        return GameSnapshot(
+            positions = board.tiles.map { it.position },
+            initialFaces = initialBoard.tiles.map { it.face },
+            faces = board.tiles.map { it.face },
+            basePresent = base.tiles.map { base.isOnBoard(it.id) },
+            moves = moves,
+            selected = selected,
+            hint = hint,
+            hintsLeft = hintsLeft,
+            shufflesLeft = shufflesLeft,
+        )
+    }
+
     private fun copy(
         board: Board = this.board,
         selected: Int? = this.selected,
@@ -223,5 +249,48 @@ class GameSession private constructor(
                 moveCount = 0,
                 history = emptyList(),
             )
+
+        /**
+         * Reconstruye una partida guardada, o devuelve `null` si la foto no describe una
+         * partida válida (archivo dañado o de una versión incompatible). Nunca lanza: una
+         * partida guardada que no se puede leer no debe impedir abrir el juego.
+         *
+         * La selección y la pista son pasajeras: si ya no son válidas, se descartan sin
+         * rechazar la partida.
+         */
+        fun restore(snapshot: GameSnapshot): GameSession? {
+            val count = snapshot.positions.size
+            if (count == 0 || snapshot.initialFaces.size != count || snapshot.faces.size != count) return null
+            if (snapshot.basePresent.size != count) return null
+            if (snapshot.hintsLeft < 0 || snapshot.shufflesLeft < 0) return null
+            if (snapshot.positions.toSet().size != count) return null
+            if (snapshot.initialFaces.any { it < 0 } || snapshot.faces.any { it < 0 }) return null
+            if (!evenCounts(snapshot.initialFaces)) return null
+            if (!evenCounts(snapshot.faces.filterIndexed { id, _ -> snapshot.basePresent[id] })) return null
+
+            val initial = Board.of(snapshot.positions, snapshot.initialFaces)
+            var board = Board.of(snapshot.positions, snapshot.faces, snapshot.basePresent)
+            val history = ArrayList<Board>(snapshot.moves.size)
+            for (move in snapshot.moves) {
+                if (board.check(move) != MoveCheck.OK) return null
+                history += board
+                board = board.remove(move)
+            }
+
+            return GameSession(
+                initialBoard = initial,
+                board = board,
+                selected = snapshot.selected?.takeIf { board.isFree(it) },
+                hint = snapshot.hint?.takeIf { board.check(it) == MoveCheck.OK },
+                hintsLeft = snapshot.hintsLeft,
+                shufflesLeft = snapshot.shufflesLeft,
+                moveCount = history.size,
+                history = history,
+            )
+        }
+
+        /** Cada dibujo aparece un número par de veces: si no, quedaría una ficha sin pareja. */
+        private fun evenCounts(faces: List<Int>): Boolean =
+            faces.groupingBy { it }.eachCount().values.all { it % 2 == 0 }
     }
 }

@@ -9,11 +9,13 @@
     <string name="difficulty_hard">Hard</string>
     <string name="tiles_left">%1$d tiles left</string>
     <string name="loading">Preparing the board…</string>
+    <string name="board_description">Game board. %1$d tiles left.</string>
 
     <string name="action_undo">Undo</string>
     <string name="action_hint">Hint</string>
     <string name="action_shuffle">Shuffle</string>
     <string name="action_restart">Restart</string>
+    <string name="action_settings">Settings</string>
 
     <string name="notice_tile_blocked">That tile is not free. Pick a tile with an open side and nothing on top.</string>
     <string name="notice_no_match">Those tiles don\'t match.</string>
@@ -26,4 +28,23 @@
     <string name="win_title">Board cleared!</string>
     <string name="win_text">Well done. Ready for another one?</string>
     <string name="play_again">Play again</string>
+
+    <string name="confirm_new_title">Start a new game?</string>
+    <string name="confirm_new_text">You will lose the game you are playing now.</string>
+    <string name="confirm_new_yes">New game</string>
+    <string name="confirm_new_no">Keep playing</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_tile_size">Tile size</string>
+    <string name="tile_size_normal">Normal</string>
+    <string name="tile_size_large">Large</string>
+    <string name="settings_tile_size_note">Large uses boards with fewer rows and columns. It applies to your next game.</string>
+    <string name="settings_high_contrast">High contrast</string>
+    <string name="settings_high_contrast_note">Darker colors and thicker borders.</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">Same as phone</string>
+    <!-- Cada idioma se muestra con su propio nombre: no se traducen. -->
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_spanish" translatable="false">Español</string>
+    <string name="settings_close">Done</string>
 </resources>

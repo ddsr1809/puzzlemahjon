@@ -133,7 +133,8 @@ class LevelGenerator(private val faceCount: Int = DEFAULT_FACE_COUNT) {
 
         /**
          * Versión del algoritmo. Súbela si un cambio hace que la misma semilla dé otro
-         * tablero, y guárdala junto a las partidas en curso para poder reconocerlas.
+         * tablero. Las partidas en curso no dependen de ella: se guardan con los dibujos
+         * de cada ficha, no con la semilla (ver `GameSnapshot`).
          */
         const val VERSION = 1
 

@@ -92,6 +92,29 @@ class LayoutTest {
             assertEquals(3, layouts.size)
             for (layout in layouts) assertTrue(layout.size in range, "$layout fuera de $range para $difficulty")
         }
-        assertEquals(9, LayoutCatalog.all.size)
+        assertEquals(17, LayoutCatalog.all.size)
+    }
+
+    @Test
+    fun `las plantillas compactas caben en 5 por 6 y respetan la dificultad`() {
+        val expected = mapOf(
+            Difficulty.EASY to 36..44,
+            Difficulty.MEDIUM to 56..60,
+            Difficulty.HARD to 72..72,
+        )
+        for ((difficulty, range) in expected) {
+            val layouts = LayoutCatalog.forDifficulty(difficulty, compact = true)
+            assertEquals(3, layouts.size)
+            for (layout in layouts) {
+                assertTrue(layout.columns <= LayoutCatalog.COMPACT_COLUMNS, "$layout es demasiado ancha")
+                assertTrue(layout.rows <= LayoutCatalog.COMPACT_ROWS, "$layout es demasiado alta")
+                assertTrue(layout.layers <= 4, "$layout tiene demasiadas capas")
+                assertTrue(layout.size in range, "$layout fuera de $range para $difficulty")
+            }
+        }
+        // Sin el parámetro se siguen usando las normales: los niveles ya publicados no cambian.
+        for (difficulty in Difficulty.entries) {
+            assertEquals(LayoutCatalog.forDifficulty(difficulty, compact = false), LayoutCatalog.forDifficulty(difficulty))
+        }
     }
 }

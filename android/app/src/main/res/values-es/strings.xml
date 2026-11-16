@@ -8,11 +8,13 @@
     <string name="difficulty_hard">Difícil</string>
     <string name="tiles_left">Quedan %1$d fichas</string>
     <string name="loading">Preparando el tablero…</string>
+    <string name="board_description">Tablero de juego. Quedan %1$d fichas.</string>
 
     <string name="action_undo">Deshacer</string>
     <string name="action_hint">Pista</string>
     <string name="action_shuffle">Barajar</string>
     <string name="action_restart">Reiniciar</string>
+    <string name="action_settings">Ajustes</string>
 
     <string name="notice_tile_blocked">Esa ficha no está libre. Elige una con un lado abierto y nada encima.</string>
     <string name="notice_no_match">Esas fichas no son iguales.</string>
@@ -25,4 +27,20 @@
     <string name="win_title">¡Tablero completado!</string>
     <string name="win_text">¡Bien hecho! ¿Otra partida?</string>
     <string name="play_again">Jugar otra</string>
+
+    <string name="confirm_new_title">¿Empezar otra partida?</string>
+    <string name="confirm_new_text">Perderás la partida que tienes a medias.</string>
+    <string name="confirm_new_yes">Empezar otra</string>
+    <string name="confirm_new_no">Seguir jugando</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_tile_size">Tamaño de las fichas</string>
+    <string name="tile_size_normal">Normal</string>
+    <string name="tile_size_large">Grande</string>
+    <string name="settings_tile_size_note">Grande usa tableros con menos filas y columnas. Se aplica a la próxima partida.</string>
+    <string name="settings_high_contrast">Alto contraste</string>
+    <string name="settings_high_contrast_note">Colores más oscuros y bordes más gruesos.</string>
+    <string name="settings_language">Idioma</string>
+    <string name="language_system">El del teléfono</string>
+    <string name="settings_close">Listo</string>
 </resources>

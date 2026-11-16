@@ -97,5 +97,15 @@ class Board private constructor(
         }
 
         fun of(layout: Layout, faces: List<Int>): Board = of(layout.positions, faces)
+
+        /**
+         * Tablero a medias: como [of], pero solo con las fichas marcadas en [present].
+         * Lo usa el guardado para reconstruir una partida.
+         */
+        fun of(positions: List<Position>, faces: List<Int>, present: List<Boolean>): Board {
+            require(positions.size == present.size) { "Hay ${positions.size} posiciones y ${present.size} marcas" }
+            val full = of(positions, faces)
+            return Board(full.tiles, full.geometry, present.toBooleanArray(), present.count { it })
+        }
     }
 }

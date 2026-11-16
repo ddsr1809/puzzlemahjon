@@ -58,8 +58,11 @@ class BoardMetrics private constructor(
     }
 
     companion object {
-        /** Alto de una ficha respecto a su ancho. */
-        const val TILE_ASPECT = 1.3f
+        /**
+         * Alto de una ficha respecto a su ancho. Con 1,2 un tablero de 6 × 8 fichas ocupa todo
+         * el ancho de un teléfono de proporción 20:9, y el dibujo de azulejo queda casi cuadrado.
+         */
+        const val TILE_ASPECT = 1.2f
 
         /** Desplazamiento por capa, en fracción de media ficha. */
         const val DEPTH_RATIO = 0.16f
@@ -90,21 +93,5 @@ class BoardMetrics private constructor(
         /** Orden de dibujo: de abajo arriba y, en cada capa, de arriba abajo y de izquierda a derecha. */
         fun drawOrder(tiles: List<Tile>): List<Tile> =
             tiles.sortedWith(compareBy<Tile>({ it.position.z }, { it.position.y }, { it.position.x }))
-    }
-}
-
-/**
- * Aspecto provisional de los 36 dibujos hasta que llegue el arte de azulejos (hito 3):
- * cuatro familias (color y símbolo) del 1 al 9.
- */
-data class FaceLook(val family: Int, val rank: Int) {
-    companion object {
-        const val FAMILIES = 4
-        const val RANKS = 9
-
-        fun of(face: Int): FaceLook {
-            require(face >= 0) { "Dibujo negativo: $face" }
-            return FaceLook(family = (face / RANKS) % FAMILIES, rank = face % RANKS + 1)
-        }
     }
 }

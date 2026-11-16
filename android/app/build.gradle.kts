@@ -11,18 +11,23 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        // OJO: el applicationId no se puede cambiar después de publicar en Google Play.
-        // Decide el definitivo antes de subir el primer build (hito 3).
+        // OJO: el applicationId no se puede cambiar después de subir el primer build a
+        // Google Play. Confírmalo antes de subirlo (README, «Subir a la pista cerrada»).
         applicationId = "com.ddsr1809.azulejo"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        // Google Play exige un versionCode mayor en cada build que subas.
+        versionCode = 3
+        versionName = "0.3.0"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 quita el código y los recursos que no se usan, y la descarga queda mucho
+            // más pequeña. El build de debug no cambia.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
