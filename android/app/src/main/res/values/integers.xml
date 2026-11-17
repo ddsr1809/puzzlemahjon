@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Primer día de la semana del calendario, en numeración ISO: 7 = domingo (EE. UU.). -->
-    <integer name="first_day_of_week">7</integer>
-</resources>

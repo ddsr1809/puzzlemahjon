@@ -53,6 +53,8 @@
     <string name="mode_quick">Quick game</string>
     <string name="mode_level">Level %1$d</string>
     <string name="mode_daily">Daily · %1$s</string>
+    <!-- Bajo el título de la partida. %1$s: fecha; %2$s: dificultad. -->
+    <string name="game_daily_subtitle">%1$s · %2$s</string>
     <!-- %1$s: nombre del mes; %2$d: día. -->
     <string name="date_month_day">%1$s %2$d</string>
     <string name="date_month_year">%1$s %2$d</string>

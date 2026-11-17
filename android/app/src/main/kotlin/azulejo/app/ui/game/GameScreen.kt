@@ -31,8 +31,8 @@ import azulejo.app.tiles.TilePalette
 import azulejo.app.ui.common.ScreenHeader
 import azulejo.app.ui.common.dayLabel
 import azulejo.app.ui.common.daysLabel
-import azulejo.app.ui.common.difficultyLabel
-import azulejo.app.ui.common.modeLabel
+import azulejo.app.ui.common.gameSubtitle
+import azulejo.app.ui.common.gameTitle
 import azulejo.core.generator.Difficulty
 import azulejo.core.progress.DailyResult
 import azulejo.core.progress.Murals
@@ -58,8 +58,8 @@ fun GameScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
-            title = modeLabel(state.mode),
-            subtitle = difficultyLabel(state.difficulty),
+            title = gameTitle(state.mode),
+            subtitle = gameSubtitle(state.mode, state.difficulty),
             onBack = onHome,
             onSettings = onSettings,
         )

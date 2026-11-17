@@ -19,16 +19,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
 import azulejo.app.data.GameMode
+import azulejo.app.data.localFirstDayOfWeek
 import azulejo.app.ui.common.MenuButton
 import azulejo.app.ui.common.ScreenHeader
 import azulejo.app.ui.common.dayLabel
@@ -105,9 +107,10 @@ fun DailyScreen(
                 onNext = { onMonth(month.plusMonths(1)) },
             )
             Spacer(Modifier.height(8.dp))
+            val firstDayOfWeek = remember { localFirstDayOfWeek() }
             MonthGrid(
-                cells = CalendarModel.cells(month, integerResource(R.integer.first_day_of_week), progress, today),
-                firstDayOfWeek = integerResource(R.integer.first_day_of_week),
+                cells = CalendarModel.cells(month, firstDayOfWeek, progress, today),
+                firstDayOfWeek = firstDayOfWeek,
                 onPlay = onPlay,
             )
             Spacer(Modifier.height(12.dp))
@@ -231,14 +234,17 @@ private fun DayCell(cell: CalendarCell, onPlay: (CalendarDay) -> Unit) {
         DayStatus.LOCKED -> colors.onBackground.copy(alpha = 0.45f)
         else -> colors.onBackground
     }
+    // Cada estado tiene su forma, no solo su color: círculo relleno (hecho ese día), aro
+    // (hecho otro día) y cuadro redondeado (hoy).
+    val shape = if (cell.status == DayStatus.TODAY) TodayShape else CircleShape
     var modifier = Modifier
         .fillMaxSize()
         .padding(2.dp)
-        .clip(CircleShape)
+        .clip(shape)
         .background(background)
     modifier = when (cell.status) {
-        DayStatus.DONE_LATE -> modifier.border(BorderStroke(3.dp, colors.primary), CircleShape)
-        DayStatus.TODAY -> modifier.border(BorderStroke(3.dp, colors.secondary), CircleShape)
+        DayStatus.DONE_LATE -> modifier.border(BorderStroke(3.dp, colors.primary), shape)
+        DayStatus.TODAY -> modifier.border(BorderStroke(3.dp, colors.secondary), shape)
         else -> modifier
     }
     if (cell.playable) modifier = modifier.clickable { onPlay(cell.day) }
@@ -259,13 +265,16 @@ private fun DayCell(cell: CalendarCell, onPlay: (CalendarDay) -> Unit) {
     }
 }
 
+/** Forma del día de hoy en el calendario y en la leyenda. */
+private val TodayShape = RoundedCornerShape(8.dp)
+
 @Composable
 private fun Legend() {
     val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         LegendRow(Modifier.background(colors.primary, CircleShape), stringResource(R.string.daily_legend_on_time))
         LegendRow(Modifier.border(BorderStroke(3.dp, colors.primary), CircleShape), stringResource(R.string.daily_legend_late))
-        LegendRow(Modifier.border(BorderStroke(3.dp, colors.secondary), CircleShape), stringResource(R.string.daily_legend_today))
+        LegendRow(Modifier.border(BorderStroke(3.dp, colors.secondary), TodayShape), stringResource(R.string.daily_legend_today))
     }
 }
 

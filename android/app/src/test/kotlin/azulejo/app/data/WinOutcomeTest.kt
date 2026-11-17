@@ -5,6 +5,7 @@ import azulejo.core.progress.CalendarDay
 import azulejo.core.progress.DailyResult
 import azulejo.core.progress.PlayerProgress
 import java.util.GregorianCalendar
+import java.util.Locale
 import java.util.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -66,7 +67,7 @@ class WinOutcomeTest {
     }
 
     @Test
-    fun `un reto del futuro (reloj atrasado) no se apunta`() {
+    fun `un reto del futuro por un reloj atrasado no se apunta`() {
         val recorded = recordWin(PlayerProgress(), GameMode.Daily(today.plusDays(1)), Difficulty.EASY, today)
         assertEquals(PlayerProgress(), recorded.progress)
         assertIs<WinOutcome.Daily>(recorded.outcome)
@@ -86,5 +87,19 @@ class WinOutcomeTest {
         calendar.clear()
         calendar.set(2026, 10, 16, 23, 59) // los meses de Calendar empiezan en 0
         assertEquals(today, localToday(calendar))
+    }
+
+    @Test
+    fun `la semana empieza segun la region y no segun el idioma`() {
+        fun firstDay(tag: String) = localFirstDayOfWeek(GregorianCalendar(Locale.forLanguageTag(tag)))
+        assertEquals(7, firstDay("en-US")) // domingo
+        assertEquals(7, firstDay("es-US"))
+        assertEquals(7, firstDay("es-MX"))
+        assertEquals(1, firstDay("es-ES")) // lunes
+        assertEquals(1, firstDay("en-GB"))
+        // Todos los valores de Calendar (1 = domingo … 7 = sábado) dan un día ISO válido.
+        val calendar = GregorianCalendar()
+        val iso = (1..7).map { calendar.firstDayOfWeek = it; localFirstDayOfWeek(calendar) }
+        assertEquals(listOf(7, 1, 2, 3, 4, 5, 6), iso)
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
@@ -49,9 +50,16 @@ fun ScreenHeader(title: String, onBack: (() -> Unit)?, onSettings: (() -> Unit)?
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             if (subtitle != null) {
-                Text(subtitle, fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground, maxLines = 1)
+                Text(
+                    text = subtitle,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
         if (onSettings != null) {
@@ -131,10 +139,29 @@ fun monthLabel(month: CalendarDay): String =
 @Composable
 fun daysLabel(days: Int): String = pluralStringResource(R.plurals.days, days, days)
 
-/** Lo que se juega, para títulos: «Nivel 12», «Reto del 16 de noviembre», «Partida rápida». */
+/** Lo que se juega, en una línea: «Nivel 12», «Reto · 16 de noviembre», «Partida rápida». */
 @Composable
 fun modeLabel(mode: GameMode): String = when (mode) {
     GameMode.Quick -> stringResource(R.string.mode_quick)
     is GameMode.Level -> stringResource(R.string.mode_level, mode.number)
     is GameMode.Daily -> stringResource(R.string.mode_daily, dayLabel(mode.day))
+}
+
+/**
+ * Título corto para la cabecera de la partida, que comparte la fila con «Inicio» y
+ * «Ajustes»: en un teléfono de 360 dp quedan unos 185 dp. La fecha del reto no cabe ahí y va
+ * en [gameSubtitle].
+ */
+@Composable
+fun gameTitle(mode: GameMode): String = when (mode) {
+    GameMode.Quick -> stringResource(R.string.mode_quick)
+    is GameMode.Level -> stringResource(R.string.mode_level, mode.number)
+    is GameMode.Daily -> stringResource(R.string.daily_title)
+}
+
+/** Segunda línea de la cabecera: la dificultad y, en el reto, también su fecha. */
+@Composable
+fun gameSubtitle(mode: GameMode, difficulty: Difficulty): String = when (mode) {
+    is GameMode.Daily -> stringResource(R.string.game_daily_subtitle, dayLabel(mode.day), difficultyLabel(difficulty))
+    else -> difficultyLabel(difficulty)
 }

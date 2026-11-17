@@ -63,7 +63,7 @@ En Windows, `gradlew.bat` en lugar de `./gradlew`. En Android Studio, las mismas
 están en el panel Gradle: **core → Tasks → verification → test** y
 **app → Tasks → verification → testDebugUnitTest**.
 
-Son 117 pruebas en `core` y 49 en `app`, y tardan unos segundos. En cada ejecución se
+Son 117 pruebas en `core` y 50 en `app`, y tardan unos segundos. En cada ejecución se
 generan y resuelven más de 3.000 niveles (entre ellos los 200 niveles en los dos tamaños de
 ficha y un año de retos diarios), se juegan miles de acciones al azar y la partida se
 guarda y se recupera después de cada una.
@@ -241,7 +241,8 @@ Fácil; sábado, Difícil; el resto, Media. El calendario empieza el 1 de noviem
 Completar el reto el mismo día suma racha; completarlo otro día lo marca, pero no suma.
 Si hoy aún no has jugado, la racha de ayer sigue viva hasta que acabe el día. La fecha se
 lee con `java.util.GregorianCalendar` (no `java.time`, que no existe en Android 7) y se
-actualiza al volver a la app.
+actualiza al volver a la app. En el calendario la semana empieza según la región del
+teléfono, no según el idioma: en EE. UU. empieza en domingo también en español.
 
 **Progreso guardado.** `PlayerProgressCodec` lo guarda como texto, con los números seguidos
 en intervalos (`levels=1-37`). Si el texto no se puede leer, el juego empieza de cero,
@@ -337,7 +338,9 @@ número repetido.
    calendario. Juega un día pasado: queda con un aro y no suma racha.
 5. **Tamaño Grande.** Con un nivel sin empezar, cambia a Grande en Ajustes: el mismo nivel
    pasa a su tablero compacto.
-6. **Idioma.** En español, el calendario empieza en lunes; en inglés, en domingo.
+6. **Calendario.** La semana empieza según la región del teléfono (domingo en EE. UU. y
+   México, lunes en España), en inglés y en español. El día de hoy es un cuadro redondeado;
+   los días hechos, un círculo relleno (ese mismo día) o un aro (otro día).
 
 ## Pendiente para el hito 5 y después
 

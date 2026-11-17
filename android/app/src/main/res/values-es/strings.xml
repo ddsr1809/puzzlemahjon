@@ -49,6 +49,7 @@
     <string name="mode_quick">Partida rápida</string>
     <string name="mode_level">Nivel %1$d</string>
     <string name="mode_daily">Reto · %1$s</string>
+    <string name="game_daily_subtitle">%1$s · %2$s</string>
     <string name="date_month_day">%2$d de %1$s</string>
     <string name="date_month_year">%1$s de %2$d</string>
     <string-array name="month_names">

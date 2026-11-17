@@ -22,8 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
@@ -43,7 +41,10 @@ import azulejo.core.progress.PlayerProgress
 @Composable
 fun MuralsScreen(progress: PlayerProgress, palette: TilePalette, onBack: () -> Unit, initialMural: Int = 0) {
     val names = stringArrayResource(R.array.mural_names)
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialMural.coerceIn(0, Murals.COUNT - 1))
+    // El primer elemento de la lista es la nota: el mural m está en el índice m + 1. Con el
+    // primer mural se empieza arriba del todo, para que la nota se vea.
+    val focus = initialMural.coerceIn(0, Murals.COUNT - 1)
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = if (focus == 0) 0 else focus + 1)
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(title = stringResource(R.string.murals_title), onBack = onBack)
         LazyColumn(
@@ -69,10 +70,10 @@ fun MuralsScreen(progress: PlayerProgress, palette: TilePalette, onBack: () -> U
                         mural = mural,
                         progress = progress,
                         palette = palette,
+                        // Sin descripción propia: el título de encima ya dice cuántas piezas hay.
                         modifier = Modifier
                             .widthIn(max = 320.dp)
-                            .fillMaxWidth()
-                            .semantics { contentDescription = header },
+                            .fillMaxWidth(),
                     )
                 }
             }

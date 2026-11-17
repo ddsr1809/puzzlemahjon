@@ -97,7 +97,7 @@ fun AzulejoApp(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit
                     onLevels = { viewModel.show(Screen.LEVELS) },
                     onDaily = { viewModel.show(Screen.DAILY) },
                     onMurals = { showMurals(null) },
-                    onQuick = ::requestQuick,
+                    onQuick = { requestQuick(it) },
                     onSettings = { showSettings = true },
                 )
 
