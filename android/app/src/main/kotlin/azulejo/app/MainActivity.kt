@@ -10,10 +10,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.ViewModelProvider
 import azulejo.app.data.AppStorage
 import azulejo.app.data.PrefsStore
-import azulejo.app.ui.game.GameScreen
+import azulejo.app.ui.AzulejoApp
 import azulejo.app.ui.game.GameViewModel
 
 class MainActivity : ComponentActivity() {
+
+    // El ViewModel sobrevive a los giros de pantalla y a los cambios de idioma.
+    private val viewModel: GameViewModel by lazy { ViewModelProvider(this)[GameViewModel::class.java] }
 
     override fun attachBaseContext(newBase: Context) {
         // El idioma elegido en Ajustes se aplica antes de crear nada que muestre texto.
@@ -29,10 +32,8 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.argb(0x80, 0x1b, 0x1b, 0x1b)),
         )
         super.onCreate(savedInstanceState)
-        // El ViewModel sobrevive a los giros de pantalla y a los cambios de idioma.
-        val viewModel = ViewModelProvider(this)[GameViewModel::class.java]
         setContent {
-            GameScreen(
+            AzulejoApp(
                 viewModel = viewModel,
                 onLanguageChange = { language ->
                     if (language != viewModel.state.value.settings.language) {
@@ -43,5 +44,11 @@ class MainActivity : ComponentActivity() {
                 },
             )
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Si la app se quedó abierta de un día para otro, el reto de hoy ya es otro.
+        viewModel.refreshToday()
     }
 }

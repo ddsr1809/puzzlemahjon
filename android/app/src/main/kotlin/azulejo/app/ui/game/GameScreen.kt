@@ -1,6 +1,5 @@
 package azulejo.app.ui.game
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,98 +11,57 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
-import azulejo.app.data.AppLanguage
-import azulejo.app.data.TileSize
+import azulejo.app.data.WinOutcome
 import azulejo.app.tiles.TilePalette
-import azulejo.app.ui.settings.SettingsDialog
-import azulejo.app.ui.theme.AzulejoTheme
+import azulejo.app.ui.common.ScreenHeader
+import azulejo.app.ui.common.dayLabel
+import azulejo.app.ui.common.daysLabel
+import azulejo.app.ui.common.difficultyLabel
+import azulejo.app.ui.common.modeLabel
 import azulejo.core.generator.Difficulty
-import azulejo.core.session.GameSession
+import azulejo.core.progress.DailyResult
+import azulejo.core.progress.Murals
 import azulejo.core.session.GameStatus
 
 /**
- * @param onLanguageChange cambiar de idioma obliga a recrear la actividad, así que lo
- *   resuelve quien la tiene a mano (`MainActivity`).
+ * La partida: cabecera, tablero, avisos y botones de ayuda. Al ganar, un diálogo cuenta
+ * qué se ha conseguido (azulejo del mural, racha…) y ofrece seguir.
  */
 @Composable
-fun GameScreen(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit) {
-    val state by viewModel.state.collectAsState()
-    AzulejoTheme(highContrast = state.settings.highContrast) {
-        GameContent(
-            state = state,
-            onNewGame = viewModel::newGame,
-            onTileTap = viewModel::onTileTap,
-            onUndo = viewModel::undo,
-            onHint = viewModel::hint,
-            onShuffle = viewModel::shuffle,
-            onRestart = viewModel::restart,
-            onTileSize = viewModel::setTileSize,
-            onHighContrast = viewModel::setHighContrast,
-            onLanguage = onLanguageChange,
-        )
-    }
-}
-
-@Composable
-fun GameContent(
+fun GameScreen(
     state: GameUiState,
-    onNewGame: (Difficulty) -> Unit,
     onTileTap: (Int) -> Unit,
     onUndo: () -> Unit,
     onHint: () -> Unit,
     onShuffle: () -> Unit,
     onRestart: () -> Unit,
-    onTileSize: (TileSize) -> Unit,
-    onHighContrast: (Boolean) -> Unit,
-    onLanguage: (AppLanguage) -> Unit,
+    onHome: () -> Unit,
+    onSettings: () -> Unit,
+    onWinAction: (WinAction) -> Unit,
 ) {
     val session = state.session
-    // Ajustes sigue abierto tras cambiar de idioma, que recrea la actividad.
-    var showSettings by rememberSaveable { mutableStateOf(false) }
-    // Dificultad pedida con una partida a medias, a la espera de que el jugador confirme.
-    var pendingDifficulty by remember { mutableStateOf<Difficulty?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-    ) {
-        TopBar(
-            difficulty = state.difficulty,
-            // Hasta que se han leído los ajustes y la partida guardada no hay nada que cambiar.
-            loaded = session != null,
-            enabled = session != null && !state.busy,
-            onSelect = { difficulty ->
-                if (session != null && isInProgress(session)) pendingDifficulty = difficulty else onNewGame(difficulty)
-            },
-            onSettings = { showSettings = true },
+    Column(modifier = Modifier.fillMaxSize()) {
+        ScreenHeader(
+            title = modeLabel(state.mode),
+            subtitle = difficultyLabel(state.difficulty),
+            onBack = onHome,
+            onSettings = onSettings,
         )
 
         Box(
@@ -163,100 +121,85 @@ fun GameContent(
         }
     }
 
-    if (session != null && session.status == GameStatus.WON) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text(stringResource(R.string.win_title)) },
-            text = { Text(stringResource(R.string.win_text), fontSize = 18.sp) },
-            confirmButton = {
-                Button(onClick = { onNewGame(state.difficulty) }, modifier = Modifier.heightIn(min = 52.dp)) {
-                    Text(stringResource(R.string.play_again), fontSize = 18.sp)
-                }
-            },
-        )
-    }
-
-    pendingDifficulty?.let { difficulty ->
-        AlertDialog(
-            onDismissRequest = { pendingDifficulty = null },
-            title = { Text(stringResource(R.string.confirm_new_title)) },
-            text = { Text(stringResource(R.string.confirm_new_text), fontSize = 18.sp) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        pendingDifficulty = null
-                        onNewGame(difficulty)
-                    },
-                    modifier = Modifier.heightIn(min = 52.dp),
-                ) {
-                    Text(stringResource(R.string.confirm_new_yes), fontSize = 18.sp)
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { pendingDifficulty = null }, modifier = Modifier.heightIn(min = 52.dp)) {
-                    Text(stringResource(R.string.confirm_new_no), fontSize = 18.sp)
-                }
-            },
-        )
-    }
-
-    if (showSettings) {
-        SettingsDialog(
-            settings = state.settings,
-            onTileSize = onTileSize,
-            onHighContrast = onHighContrast,
-            onLanguage = onLanguage,
-            onClose = { showSettings = false },
-        )
+    val win = state.win
+    if (session != null && session.status == GameStatus.WON && win != null) {
+        WinDialog(win, onWinAction)
     }
 }
 
-/** Hay algo que perder: ya se ha retirado algún par y la partida no ha terminado. */
-private fun isInProgress(session: GameSession): Boolean =
-    session.status != GameStatus.WON && session.board.remainingCount < session.board.tiles.size
+/** Lo que se puede hacer desde el diálogo de victoria. */
+sealed interface WinAction {
+    data object GoHome : WinAction
+    data class PlayLevel(val level: Int) : WinAction
+    data object ShowMurals : WinAction
+    data object ShowCalendar : WinAction
+    data class PlayQuick(val difficulty: Difficulty) : WinAction
+}
 
 @Composable
-private fun TopBar(
-    difficulty: Difficulty,
-    loaded: Boolean,
-    enabled: Boolean,
-    onSelect: (Difficulty) -> Unit,
-    onSettings: () -> Unit,
-) {
-    Column(Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.new_game),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 4.dp),
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            TextButton(onClick = onSettings, enabled = loaded, modifier = Modifier.heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.action_settings), fontSize = 18.sp)
+private fun WinDialog(win: WinOutcome, onAction: (WinAction) -> Unit) {
+    val title: String
+    val lines = ArrayList<String>()
+    val primary: Pair<String, WinAction>
+    val secondary: Pair<String, WinAction>
+    when (win) {
+        is WinOutcome.Level -> {
+            title = stringResource(R.string.win_level_title, win.level)
+            when {
+                win.muralCompleted -> lines += stringResource(R.string.win_mural_completed, win.mural + 1)
+                win.firstTime -> lines += stringResource(R.string.win_level_tile, win.mural + 1, win.muralPieces, Murals.PIECES)
+                else -> lines += stringResource(R.string.win_level_repeat)
+            }
+            val next = win.nextLevel
+            if (next == null) lines += stringResource(R.string.win_all_levels)
+            primary = if (next != null) {
+                stringResource(R.string.win_next_level, next) to WinAction.PlayLevel(next)
+            } else {
+                stringResource(R.string.win_see_murals) to WinAction.ShowMurals
+            }
+            secondary = if (win.muralCompleted && next != null) {
+                stringResource(R.string.win_see_murals) to WinAction.ShowMurals
+            } else {
+                stringResource(R.string.action_home) to WinAction.GoHome
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            for (option in Difficulty.entries) {
-                val label = stringResource(option.labelRes())
-                val isSelected = option == difficulty
-                val buttonModifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 52.dp)
-                    .semantics { this.selected = isSelected }
-                if (isSelected) {
-                    Button(onClick = { onSelect(option) }, enabled = enabled, modifier = buttonModifier) {
-                        Text(label, fontSize = 18.sp)
-                    }
-                } else {
-                    OutlinedButton(onClick = { onSelect(option) }, enabled = enabled, modifier = buttonModifier) {
-                        Text(label, fontSize = 18.sp)
-                    }
-                }
+        is WinOutcome.Daily -> {
+            title = stringResource(R.string.win_daily_title)
+            if (win.result == DailyResult.ON_TIME) {
+                lines += stringResource(R.string.win_daily_streak, daysLabel(win.streak))
+            } else {
+                lines += stringResource(R.string.win_daily_late, dayLabel(win.day))
             }
+            primary = stringResource(R.string.win_calendar) to WinAction.ShowCalendar
+            secondary = stringResource(R.string.action_home) to WinAction.GoHome
+        }
+        is WinOutcome.Quick -> {
+            title = stringResource(R.string.win_title)
+            lines += stringResource(R.string.win_text)
+            primary = stringResource(R.string.play_again) to WinAction.PlayQuick(win.difficulty)
+            secondary = stringResource(R.string.action_home) to WinAction.GoHome
         }
     }
+
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text(title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (line in lines) Text(line, fontSize = 18.sp)
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onAction(primary.second) }, modifier = Modifier.heightIn(min = 52.dp)) {
+                Text(primary.first, fontSize = 18.sp)
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = { onAction(secondary.second) }, modifier = Modifier.heightIn(min = 52.dp)) {
+                Text(secondary.first, fontSize = 18.sp)
+            }
+        },
+    )
 }
 
 @Composable
@@ -297,12 +240,6 @@ private fun ActionButton(
             if (count != null) Text(count.toString(), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
     }
-}
-
-private fun Difficulty.labelRes(): Int = when (this) {
-    Difficulty.EASY -> R.string.difficulty_easy
-    Difficulty.MEDIUM -> R.string.difficulty_medium
-    Difficulty.HARD -> R.string.difficulty_hard
 }
 
 private fun GameNotice.textRes(): Int = when (this) {

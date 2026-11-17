@@ -1,28 +1,36 @@
-# Solitario de azulejos — hito 3: arte, ajustes y guardado
+# Solitario de azulejos — hito 4: niveles, reto diario y murales
 
 Dos módulos:
 
 - **`core`**: la lógica del juego en Kotlin puro, sin Android. Tablero por capas, regla
   de «ficha libre», 17 plantillas verticales (9 normales y 8 compactas), generador de
   niveles con solución garantizada (tres dificultades), solucionador, sesión de juego
-  (tocar, deshacer, pista, barajar, reiniciar) y guardado de la partida como texto.
-- **`app`**: la app de Android en Jetpack Compose. Las 36 fichas de azulejo, los ajustes
+  (tocar, deshacer, pista, barajar, reiniciar), guardado de la partida como texto y, desde
+  el hito 4, el progreso: los 200 niveles, el reto diario, las rachas y los murales.
+- **`app`**: la app de Android en Jetpack Compose. Pantalla de inicio, selector de
+  niveles, calendario del reto, murales, la partida, las 36 fichas de azulejo, los ajustes
   (tamaño de ficha, alto contraste, idioma), el guardado en el teléfono y el icono.
 
-## Novedades del hito 3
+## Novedades del hito 4
 
-- **Arte de las 36 fichas.** Cuatro familias por nueve motivos, dibujadas por código. La
-  familia se reconoce por el color y por el marco; el motivo, por su silueta.
-- **Guardado local.** La partida se guarda después de cada jugada. Si cierras la app o
-  Android la cierra, al abrirla sigues donde lo dejaste, con tus pistas, tu barajada y
-  todo lo que puedes deshacer.
-- **Ajustes.** Tamaño de ficha Normal o Grande, alto contraste e idioma (el del teléfono,
-  inglés o español).
-- **Aviso antes de abandonar una partida.** Tocar Fácil, Media o Difícil con una partida a
-  medias pregunta antes de empezar otra.
-- **Icono de la app** y build de publicación con R8.
-- **Fichas un 8 % más anchas** en un teléfono 20:9: la ficha pasa de proporción 1,3 a 1,2
-  y el tablero de 6 × 8 aprovecha casi todo el ancho.
+- **Pantalla de inicio.** Continuar la partida a medias, jugar el siguiente nivel, el reto
+  diario, la lista de niveles, los murales y la partida rápida (la de antes, con tablero
+  al azar). El botón «Atrás» del teléfono vuelve siempre al inicio.
+- **200 niveles fijos.** El nivel 37 es el mismo tablero para todos los jugadores. Se
+  desbloquean en orden y los ganados se pueden repetir. Los 20 primeros son fáciles y la
+  dificultad sube por tramos (tabla en «Cómo funciona»).
+- **Murales.** Cada nivel ganado coloca un azulejo en uno de los 8 murales de 25 piezas.
+- **Reto diario.** Un tablero por día, el mismo para todos ese día. Se puede jugar
+  cualquier día pasado desde el calendario, pero solo el de hoy suma racha. Racha actual
+  y mejor racha.
+- **Fin de nivel.** Al ganar, un aviso dice qué azulejo se ha colocado o cómo va la racha
+  y ofrece el siguiente nivel. Ahí irá el anuncio intersticial del hito 5.
+- **Tamaño Grande.** Cada nivel y cada reto tienen también su versión con plantilla
+  compacta: el mismo número de nivel da un tablero en Normal y otro en Grande, los dos
+  siempre iguales.
+
+Tu partida y tus ajustes del hito 3 se conservan: la partida a medias aparece como
+«Partida rápida» en «Continuar».
 
 ## Requisitos
 
@@ -55,9 +63,10 @@ En Windows, `gradlew.bat` en lugar de `./gradlew`. En Android Studio, las mismas
 están en el panel Gradle: **core → Tasks → verification → test** y
 **app → Tasks → verification → testDebugUnitTest**.
 
-Son 87 pruebas en `core` y 29 en `app`, y tardan unos segundos. En cada ejecución se
-generan y resuelven más de 2.500 niveles, se juegan miles de acciones al azar y la partida
-se guarda y se recupera después de cada una.
+Son 117 pruebas en `core` y 49 en `app`, y tardan unos segundos. En cada ejecución se
+generan y resuelven más de 3.000 niveles (entre ellos los 200 niveles en los dos tamaños de
+ficha y un año de retos diarios), se juegan miles de acciones al azar y la partida se
+guarda y se recupera después de cada una.
 
 ## Estructura
 
@@ -69,12 +78,21 @@ core/src/main/kotlin/azulejo/core/
   solver/      Solver (búsqueda), RandomPlayer (medida de dificultad)
   session/     GameSession (partida y ayudas), Shuffler (barajar con solución),
                GameSnapshot y GameSnapshotCodec (guardar y recuperar)
+  progress/    LevelCatalog (200 niveles), DailyChallenge (reto diario), Murals,
+               PlayerProgress y PlayerProgressCodec (niveles ganados, retos, rachas),
+               CalendarDay (fechas sin java.time)
   random/      SeededRandom: aleatoriedad reproducible
 app/src/main/kotlin/azulejo/app/
   MainActivity.kt, AppLocale.kt
   tiles/       TileArt (los 36 dibujos), TilePalette (colores), TilePainter (pintarlos)
-  data/        Settings, AppStorage (qué se guarda), PrefsStore (dónde)
-  ui/game/     GameViewModel, GameScreen, BoardView, BoardMetrics, GameNotice
+  data/        Settings, GameMode (nivel, reto o rápida), WinOutcome (qué se apunta al
+               ganar), AppStorage (qué se guarda), PrefsStore (dónde), LocalDate (hoy)
+  ui/          AzulejoApp: elige la pantalla y muestra los diálogos comunes
+  ui/home/     HomeScreen (inicio), LevelSelectScreen (los 200 niveles)
+  ui/daily/    DailyScreen (racha y calendario), CalendarModel
+  ui/collection/ MuralsScreen
+  ui/game/     GameViewModel, GameUiState, GameScreen, BoardView, BoardMetrics, GameNotice
+  ui/common/   cabecera, botones y textos compartidos
   ui/settings/ SettingsDialog
   ui/theme/    colores y tema, normal y de alto contraste
 app/src/main/res/values/      textos en inglés
@@ -84,8 +102,9 @@ store/         icono de 512 px para la ficha de Google Play
 tools/         make_icon.py: regenera el icono si cambias el diseño
 ```
 
-`TileArt`, `TilePalette`, `Settings`, `AppStorage`, `BoardMetrics` y `GameNotice` son Kotlin
-puro: se prueban en la JVM, sin emulador.
+`TileArt`, `TilePalette`, `Settings`, `GameMode`, `WinOutcome`, `AppStorage`, `BoardMetrics`,
+`GameNotice`, `GameUiState` y `CalendarModel` son Kotlin puro: se prueban en la JVM, sin
+emulador.
 
 ## Uso
 
@@ -113,6 +132,16 @@ session.status                                     // PLAYING, WON o STUCK
 
 val text = GameSnapshotCodec.encode(session.snapshot())             // guardar
 val restored = GameSnapshotCodec.decode(text)?.let { GameSession.restore(it) }  // null si no vale
+
+val recipe = LevelCatalog.recipe(37)               // o DailyChallenge.recipe(CalendarDay.of(2026, 11, 16))
+val level37 = generator.generate(recipe.layout(compact = false), recipe.difficulty, recipe.seed)
+
+var progress = PlayerProgress()
+val win = progress.completeLevel(1)                // win.mural, win.muralPieces, win.muralCompleted
+progress = win.progress
+progress.nextLevel                                 // 2
+progress = progress.completeDaily(today, today).progress
+progress.currentStreak(today)                      // 1
 ```
 
 ## Cómo funciona
@@ -187,6 +216,39 @@ app lo guarda en las preferencias de Android (`PrefsStore`), sin permisos ni dep
 aplica antes de mostrar nada. En Android 13 o posterior también aparece en los ajustes del
 sistema, en el idioma de la app.
 
+**Niveles.** Cada nivel es una receta fija: dificultad, semilla y qué plantilla de esa
+dificultad usar. Con fichas grandes se usa la plantilla compacta del mismo puesto. Las
+plantillas de una dificultad se turnan, así que dos niveles seguidos de la misma
+dificultad nunca repiten plantilla.
+
+| Niveles | Dificultad |
+| --- | --- |
+| 1–20 | Fácil |
+| 21–50 | Media; los múltiplos de 5, Fácil (un respiro) |
+| 51–100 | Media; los múltiplos de 5, Difícil |
+| 101–150 | Media y Difícil alternadas |
+| 151–200 | Difícil; los múltiplos de 5, Media |
+
+Se desbloquean en orden: el 1, los ganados y el que sigue a uno ganado.
+
+**Murales.** El nivel *n* coloca la pieza `(n − 1) mod 25` del mural `(n − 1) / 25`, por
+filas. Cada mural es un panel de 5 × 5 con simetría de cuadrado (centro, anillo interior y
+borde repiten dibujo) hecho con los mismos 36 dibujos de las fichas.
+
+**Reto diario.** La semilla sale de la fecha local del teléfono, así que el reto no cambia
+en todo el día y el de cualquier día pasado se puede volver a generar. Lunes y domingo,
+Fácil; sábado, Difícil; el resto, Media. El calendario empieza el 1 de noviembre de 2026.
+Completar el reto el mismo día suma racha; completarlo otro día lo marca, pero no suma.
+Si hoy aún no has jugado, la racha de ayer sigue viva hasta que acabe el día. La fecha se
+lee con `java.util.GregorianCalendar` (no `java.time`, que no existe en Android 7) y se
+actualiza al volver a la app.
+
+**Progreso guardado.** `PlayerProgressCodec` lo guarda como texto, con los números seguidos
+en intervalos (`levels=1-37`). Si el texto no se puede leer, el juego empieza de cero,
+pero lo aparta en otra clave (`progress.unreadable`) para poder recuperarlo. Junto a la
+partida se guarda qué era (`game.mode`: `level:37`, `daily:20773` o `quick`); las partidas
+del hito 3, que no lo tienen, se recuperan como partida rápida.
+
 **Reproducibilidad.** Plantilla + dificultad + semilla dan siempre el mismo nivel. La
 aleatoriedad sale de `SeededRandom` (SplitMix64 propio), no de `kotlin.random`, para que
 el resultado no dependa de la versión de Kotlin ni de la plataforma.
@@ -205,7 +267,14 @@ el resultado no dependa de la versión de Kotlin ni de la plataforma.
 5. **No cambies el formato de guardado ni las claves de los ajustes** sin subir
    `GameSnapshotCodec.FORMAT`. Dos pruebas fijan el texto exacto: si fallan, una
    actualización dejaría de leer lo que ya hay guardado en los teléfonos.
-6. **Los 36 dibujos no cambian de número.** El generador reparte dibujos del 0 al 35; si
+6. **No cambies la receta de un nivel o de un reto publicado.** La prueba `los niveles y
+   retos publicados no cambian entre versiones` fija varios. Cambiar la curva de
+   dificultad, el orden de las plantillas o las sales de las semillas cambia niveles que
+   los jugadores ya han ganado. Si es intencionado, sube `LevelCatalog.VERSION` o
+   `DailyChallenge.VERSION`.
+7. **No cambies el formato del progreso** sin subir `PlayerProgressCodec.FORMAT`, ni el
+   diseño de un mural publicado. Una prueba fija el texto exacto.
+8. **Los 36 dibujos no cambian de número.** El generador reparte dibujos del 0 al 35; si
    reordenas las familias o los motivos, las partidas guardadas cambian de aspecto.
 
 ## Rendimiento medido (JVM de escritorio)
@@ -253,13 +322,29 @@ Y una que sí se puede cambiar, pero conviene decidir: el nombre (`app_name` en 
 En cada build nuevo, sube `versionCode` en `app/build.gradle.kts`: Google Play rechaza un
 número repetido.
 
-## Pendiente para el hito 4
+## Qué probar en el teléfono
 
-- Los 200 niveles, los murales, el reto diario y las rachas. Hoy cada partida usa una
-  semilla al azar.
-- En el tamaño Grande cada nivel necesitará su propia plantilla compacta: el nivel 37 será
-  un tablero distinto en Normal y en Grande, los dos reproducibles.
+1. **Actualizar sin perder nada.** Instala encima de la versión del hito 3 (sin
+   desinstalar). Tu partida a medias aparece en «Continuar» como partida rápida, y los
+   ajustes siguen igual.
+2. **Niveles.** Juega el nivel 1 hasta ganarlo: el aviso dice «Un azulejo nuevo para el
+   mural 1: 1 de 25» y ofrece el nivel 2. En «Murales» aparece el azulejo colocado. En
+   «Niveles», el 1 lleva ✓, el 2 está resaltado y el 3 bloqueado.
+3. **Continuar.** Empieza un nivel, retira un par, vuelve al inicio con «Inicio» o con
+   «Atrás» y pulsa «Continuar». Pide luego otro nivel o el reto: pregunta antes de
+   abandonar la partida.
+4. **Reto diario.** Juega el de hoy: la racha pasa a 1 día y el día queda relleno en el
+   calendario. Juega un día pasado: queda con un aro y no suma racha.
+5. **Tamaño Grande.** Con un nivel sin empezar, cambia a Grande en Ajustes: el mismo nivel
+   pasa a su tablero compacto.
+6. **Idioma.** En español, el calendario empieza en lunes; en inglés, en domingo.
+
+## Pendiente para el hito 5 y después
+
+- Anuncios (UMP, intersticial al acabar un nivel, recompensado), compra para quitarlos,
+  política de privacidad y Seguridad de los datos.
 - El tablero no se puede jugar con lector de pantalla (TalkBack): anuncia cuántas fichas
-  quedan, pero no cada ficha.
+  quedan, pero no cada ficha. Las pantallas nuevas (inicio, niveles, calendario, murales)
+  sí se pueden usar con TalkBack.
 - El código de `app` que usa Compose se compila por primera vez en tu máquina. Si algo
   falla al sincronizar o compilar, el mensaje de error dice el archivo y la línea.

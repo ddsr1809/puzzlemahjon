@@ -3,7 +3,6 @@
     <!-- Nombre provisional: el definitivo se decide antes de publicar. -->
     <string name="app_name">Azulejo Mahjong</string>
 
-    <string name="new_game">New game</string>
     <string name="difficulty_easy">Easy</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_hard">Hard</string>
@@ -47,4 +46,107 @@
     <string name="language_english" translatable="false">English</string>
     <string name="language_spanish" translatable="false">Español</string>
     <string name="settings_close">Done</string>
+
+    <!-- Hito 4: inicio, niveles, reto diario y murales -->
+    <string name="action_home">Home</string>
+
+    <string name="mode_quick">Quick game</string>
+    <string name="mode_level">Level %1$d</string>
+    <string name="mode_daily">Daily · %1$s</string>
+    <!-- %1$s: nombre del mes; %2$d: día. -->
+    <string name="date_month_day">%1$s %2$d</string>
+    <string name="date_month_year">%1$s %2$d</string>
+    <string-array name="month_names">
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+    <!-- De lunes a domingo, siempre en este orden. -->
+    <string-array name="weekday_short">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
+    </string-array>
+    <plurals name="days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+
+    <string name="home_continue">Continue</string>
+    <string name="home_play_level">Play level %1$d</string>
+    <string name="home_all_levels_done">You have won all 200 levels. You can replay any of them.</string>
+    <string name="home_daily">Daily challenge</string>
+    <string name="home_daily_done">Done today · streak: %1$s</string>
+    <string name="home_daily_keep_streak">Keep your %1$s streak going</string>
+    <string name="home_daily_waiting">A new board every day</string>
+    <string name="home_levels">Levels</string>
+    <string name="home_levels_progress">%1$d of %2$d won</string>
+    <string name="home_murals">Murals</string>
+    <string name="home_murals_progress">%1$d of %2$d complete</string>
+    <string name="home_quick">Quick game</string>
+    <string name="home_quick_note">A random board. It doesn\'t count toward levels or murals.</string>
+
+    <string name="levels_title">Levels</string>
+    <!-- Mural 1 · Blue Star · 12/25 -->
+    <string name="levels_mural_header">Mural %1$d · %2$s · %3$d/%4$d</string>
+    <string name="level_completed_description">Level %1$d, won</string>
+    <string name="level_open_description">Level %1$d</string>
+    <string name="level_locked_description">Level %1$d, locked</string>
+
+    <string name="daily_title">Daily challenge</string>
+    <string name="daily_play_today">Play today\'s challenge</string>
+    <string name="daily_continue_today">Continue today\'s challenge</string>
+    <string name="daily_today_done">Today\'s challenge is done. See you tomorrow!</string>
+    <string name="daily_streak">Current streak</string>
+    <string name="daily_best_streak">Best streak</string>
+    <string name="daily_previous_month">Previous month</string>
+    <string name="daily_next_month">Next month</string>
+    <string name="daily_legend_on_time">Done on the day</string>
+    <string name="daily_legend_late">Done on another day</string>
+    <string name="daily_legend_today">Today</string>
+    <string name="daily_note">Tap any past day to play it. Only today\'s board counts toward your streak.</string>
+    <string name="day_done_on_time">%1$s, done on the day</string>
+    <string name="day_done_late">%1$s, done on another day</string>
+    <string name="day_today">%1$s, today</string>
+    <string name="day_missed">%1$s, not played</string>
+    <string name="day_locked">%1$s, not available</string>
+
+    <string name="murals_title">Murals</string>
+    <string name="murals_note">Each level you win places one tile. Every 25 levels complete a mural.</string>
+    <string name="mural_header">Mural %1$d · %2$s · %3$d/%4$d</string>
+    <string-array name="mural_names">
+        <item>Blue Star</item>
+        <item>Garden</item>
+        <item>Sea</item>
+        <item>Medallions</item>
+        <item>Lattice</item>
+        <item>Arches</item>
+        <item>Night</item>
+        <item>Grand Finale</item>
+    </string-array>
+
+    <string name="win_level_title">Level %1$d complete!</string>
+    <string name="win_level_tile">A new tile for mural %1$d: %2$d of %3$d.</string>
+    <string name="win_mural_completed">You finished mural %1$d. Go and see it!</string>
+    <string name="win_level_repeat">You had already won this level. Well played again!</string>
+    <string name="win_all_levels">You have won all 200 levels!</string>
+    <string name="win_next_level">Level %1$d</string>
+    <string name="win_see_murals">See murals</string>
+    <string name="win_daily_title">Daily challenge complete!</string>
+    <string name="win_daily_streak">Your streak: %1$s.</string>
+    <string name="win_daily_late">The board for %1$s is done. Past days don\'t count toward the streak.</string>
+    <string name="win_calendar">Calendar</string>
 </resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 1 = lunes: así empiezan la semana los calendarios en español. -->
+    <integer name="first_day_of_week">1</integer>
+</resources>

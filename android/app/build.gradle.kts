@@ -17,8 +17,8 @@ android {
         minSdk = 24
         targetSdk = 36
         // Google Play exige un versionCode mayor en cada build que subas.
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
     }
 
     buildTypes {

@@ -3,6 +3,10 @@ package azulejo.app.data
 import azulejo.core.generator.Difficulty
 import azulejo.core.generator.LevelGenerator
 import azulejo.core.layouts.LayoutCatalog
+import azulejo.core.progress.CalendarDay
+import azulejo.core.progress.DailyResult
+import azulejo.core.progress.PlayerProgress
+import azulejo.core.progress.PlayerProgressCodec
 import azulejo.core.session.GameSession
 import azulejo.core.session.GameStatus
 import kotlin.test.Test
@@ -177,5 +181,91 @@ class AppStorageTest {
         assertNull(storage.loadGame())
         assertEquals(settings, storage.loadSettings())
         assertEquals(Difficulty.HARD, storage.loadDifficulty())
+    }
+
+    // ---------- Modo de la partida ----------
+
+    @Test
+    fun `una partida guardada recuerda si era un nivel o un reto`() {
+        val day = CalendarDay.of(2026, 11, 16)
+        for (mode in listOf(GameMode.Level(37), GameMode.Daily(day), GameMode.Quick)) {
+            storage.saveDifficulty(Difficulty.HARD)
+            val session = GameSession.start(level(Difficulty.MEDIUM, 5).board)
+            storage.saveGame(Difficulty.MEDIUM, session, mode)
+            val loaded = assertNotNull(AppStorage(store).loadGame())
+            assertEquals(mode, loaded.mode)
+            assertEquals(session.snapshot(), loaded.session.snapshot())
+        }
+        // La dificultad del nivel sale de la receta, y no pisa la de la partida rápida.
+        storage.saveDifficulty(Difficulty.EASY)
+        storage.saveGame(Difficulty.HARD, GameSession.start(level(Difficulty.HARD, 5).board), GameMode.Level(55))
+        assertEquals(Difficulty.HARD, assertNotNull(storage.loadGame()).difficulty)
+        assertEquals(Difficulty.EASY, storage.loadDifficulty())
+        assertEquals("level:55", store.values[AppStorage.KEY_GAME_MODE])
+    }
+
+    /** Quien actualiza desde el hito 3 tiene una partida sin modo guardado: es una partida rápida. */
+    @Test
+    fun `una partida del hito 3 se recupera como partida rapida`() {
+        storage.saveGame(Difficulty.MEDIUM, GameSession.start(level(Difficulty.MEDIUM, 6).board))
+        store.values.remove(AppStorage.KEY_GAME_MODE)
+        val loaded = assertNotNull(storage.loadGame())
+        assertEquals(GameMode.Quick, loaded.mode)
+        assertEquals(Difficulty.MEDIUM, loaded.difficulty)
+    }
+
+    @Test
+    fun `una partida con un modo que no se entiende se descarta`() {
+        for (bad in listOf("level:0", "level:201", "level:x", "daily:-5", "torneo:3", "")) {
+            storage.saveGame(Difficulty.MEDIUM, GameSession.start(level(Difficulty.MEDIUM, 6).board))
+            store.values[AppStorage.KEY_GAME_MODE] = bad
+            assertNull(storage.loadGame(), "debería descartar el modo '$bad'")
+            assertFalse(AppStorage.KEY_GAME in store.values)
+            assertFalse(AppStorage.KEY_GAME_MODE in store.values)
+        }
+    }
+
+    @Test
+    fun `los modos se guardan con claves fijas`() {
+        assertEquals("quick", GameMode.Quick.key)
+        assertEquals("level:12", GameMode.Level(12).key)
+        assertEquals("daily:20773", GameMode.Daily(CalendarDay.of(2026, 11, 16)).key)
+        for (mode in listOf(GameMode.Quick, GameMode.Level(1), GameMode.Level(200), GameMode.Daily(CalendarDay.of(2030, 1, 1)))) {
+            assertEquals(mode, GameMode.fromKey(mode.key))
+        }
+        assertEquals("game.mode", AppStorage.KEY_GAME_MODE)
+        assertEquals("progress", AppStorage.KEY_PROGRESS)
+    }
+
+    // ---------- Progreso ----------
+
+    @Test
+    fun `el progreso se guarda y se recupera`() {
+        assertEquals(PlayerProgress(), storage.loadProgress())
+        val today = CalendarDay.of(2026, 11, 16)
+        var progress = PlayerProgress()
+        for (n in 1..30) progress = progress.completeLevel(n).progress
+        progress = progress.completeDaily(today, today).progress
+        storage.saveProgress(progress)
+        assertEquals(progress, AppStorage(store).loadProgress())
+        // Borrar la partida no toca el progreso.
+        storage.clearGame()
+        assertEquals(progress, storage.loadProgress())
+    }
+
+    @Test
+    fun `un progreso ilegible se aparta sin perderlo`() {
+        store.values[AppStorage.KEY_PROGRESS] = "azulejo-progreso 9\nlevels=1-80"
+        assertEquals(PlayerProgress(), storage.loadProgress())
+        assertEquals("azulejo-progreso 9\nlevels=1-80", store.values[AppStorage.KEY_PROGRESS_UNREADABLE])
+        // Se sigue jugando; un segundo fallo no pisa la copia apartada.
+        storage.saveProgress(PlayerProgress(setOf(1)))
+        store.values[AppStorage.KEY_PROGRESS] = "otra cosa"
+        assertEquals(PlayerProgress(), storage.loadProgress())
+        assertEquals("azulejo-progreso 9\nlevels=1-80", store.values[AppStorage.KEY_PROGRESS_UNREADABLE])
+        assertEquals(
+            PlayerProgress(dailyResults = mapOf(1 to DailyResult.LATE)),
+            PlayerProgressCodec.decode("azulejo-progreso 1\nlevels=\ndaily=\nlate=1\n"),
+        )
     }
 }
