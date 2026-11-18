@@ -1,6 +1,10 @@
 package azulejo.app.data
 
 import azulejo.core.generator.Difficulty
+import azulejo.core.monetization.AdPacing
+import azulejo.core.monetization.AdPacingCodec
+import azulejo.core.monetization.HelpQuota
+import azulejo.core.monetization.HelpQuotaCodec
 import azulejo.core.progress.PlayerProgress
 import azulejo.core.progress.PlayerProgressCodec
 import azulejo.core.session.GameSession
@@ -23,7 +27,9 @@ class SavedGame(val mode: GameMode, val difficulty: Difficulty, val session: Gam
 
 /**
  * Lo que el juego guarda en el teléfono: los ajustes, la última dificultad elegida para la
- * partida rápida, la partida en curso y el progreso (niveles, retos y rachas). Kotlin puro; el acceso al disco está detrás de [KeyValueStore].
+ * partida rápida, la partida en curso, el progreso (niveles, retos y rachas) y, desde el
+ * hito 5, el ritmo de los anuncios, la cuota de ayudas gratuitas y si se compró quitar los
+ * anuncios. Kotlin puro; el acceso al disco está detrás de [KeyValueStore].
  *
  * Leer nunca falla: un valor que falta, está dañado o viene de una versión incompatible se
  * sustituye por el valor por defecto, y una partida que no se puede leer se descarta.
@@ -119,6 +125,32 @@ class AppStorage(private val store: KeyValueStore) {
         store.write(KEY_PROGRESS, PlayerProgressCodec.encode(progress))
     }
 
+    // ---------- Anuncios y compra ----------
+
+    /** Cuántos tableros se han ganado desde el último intersticial. Si no se puede leer, de cero. */
+    fun loadAdPacing(): AdPacing = store.read(KEY_AD_PACING)?.let { AdPacingCodec.decode(it) } ?: AdPacing()
+
+    fun saveAdPacing(pacing: AdPacing) {
+        store.write(KEY_AD_PACING, AdPacingCodec.encode(pacing))
+    }
+
+    /** Ayudas gratuitas gastadas hoy. Si no se puede leer, la cuota entera. */
+    fun loadHelpQuota(): HelpQuota = store.read(KEY_HELP_QUOTA)?.let { HelpQuotaCodec.decode(it) } ?: HelpQuota()
+
+    fun saveHelpQuota(quota: HelpQuota) {
+        store.write(KEY_HELP_QUOTA, HelpQuotaCodec.encode(quota))
+    }
+
+    /**
+     * Lo último que dijo Google Play sobre la compra «Quitar anuncios». Solo sirve mientras
+     * Google Play no contesta; la compra de verdad la guarda Google Play en la cuenta.
+     */
+    fun loadRemoveAdsOwned(): Boolean = store.read(KEY_REMOVE_ADS) == VALUE_ON
+
+    fun saveRemoveAdsOwned(owned: Boolean) {
+        store.write(KEY_REMOVE_ADS, if (owned) VALUE_ON else VALUE_OFF)
+    }
+
     companion object {
         const val KEY_TILE_SIZE = "settings.tileSize"
         const val KEY_HIGH_CONTRAST = "settings.highContrast"
@@ -128,6 +160,9 @@ class AppStorage(private val store: KeyValueStore) {
         const val KEY_GAME_MODE = "game.mode"
         const val KEY_PROGRESS = "progress"
         const val KEY_PROGRESS_UNREADABLE = "progress.unreadable"
+        const val KEY_AD_PACING = "ads.pacing"
+        const val KEY_HELP_QUOTA = "help.quota"
+        const val KEY_REMOVE_ADS = "purchase.removeAds"
 
         private const val VALUE_ON = "on"
         private const val VALUE_OFF = "off"

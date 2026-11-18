@@ -151,4 +151,39 @@
     <string name="win_daily_streak">Your streak: %1$s.</string>
     <string name="win_daily_late">The board for %1$s is done. Past days don\'t count toward the streak.</string>
     <string name="win_calendar">Calendar</string>
+
+    <!-- Hito 5: ayuda extra, anuncios, compra y privacidad -->
+    <string name="extra_title_hint">Out of hints</string>
+    <string name="extra_title_shuffle">Out of shuffles</string>
+    <string name="extra_ad_hint">Watch a short video to get 1 more hint.</string>
+    <string name="extra_ad_shuffle">Watch a short video to get 1 more shuffle.</string>
+    <string name="extra_watch">Watch video</string>
+    <string name="extra_no_thanks">No, thanks</string>
+    <string name="extra_free_hint">No video is available right now, but you can use a free hint. Free hints left today: %1$d.</string>
+    <string name="extra_free_shuffle">No video is available right now, but you can use a free shuffle. Free shuffles left today: %1$d.</string>
+    <string name="extra_use_free_hint">Use free hint</string>
+    <string name="extra_use_free_shuffle">Use free shuffle</string>
+    <string name="extra_none_hint">No more hints for now. Videos need an internet connection, and your free hints come back tomorrow.</string>
+    <string name="extra_none_shuffle">No more shuffles for now. Videos need an internet connection, and your free shuffle comes back tomorrow.</string>
+    <string name="extra_undo_free">Undo and Restart are always free.</string>
+    <string name="extra_ok">OK</string>
+
+    <string name="settings_ads">Ads</string>
+    <!-- %1$s: precio con su moneda, tal como lo da Google Play ($2.99). -->
+    <string name="remove_ads_button">Remove ads · %1$s</string>
+    <string name="remove_ads_note">One payment. Removes the ads that appear after some boards. Videos for extra hints stay optional.</string>
+    <string name="remove_ads_owned">Ads after boards are turned off. Thank you for your support!</string>
+    <string name="remove_ads_pending">Your payment is being processed. Ads will be turned off as soon as it is complete.</string>
+    <string name="remove_ads_unavailable">The purchase isn\'t available right now. Check your internet connection and that you are signed in to Google Play.</string>
+    <string name="restore_purchase">Restore purchase</string>
+    <string name="purchase_restored">Purchase restored. Ads are turned off.</string>
+    <string name="purchase_not_found">No purchase found for this Google account.</string>
+    <string name="purchase_store_unavailable">Couldn\'t reach Google Play. Please try again later.</string>
+
+    <string name="settings_privacy">Privacy</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="privacy_options">Privacy options</string>
+    <string name="privacy_options_note">Change how ads may use your data.</string>
+    <!-- Página pública de la política (GitHub Pages, carpeta docs/ del repositorio). -->
+    <string name="privacy_policy_url">https://ddsr1809.github.io/puzzlemahjon/privacy/</string>
 </resources>

@@ -144,4 +144,37 @@
     <string name="win_daily_streak">Tu racha: %1$s.</string>
     <string name="win_daily_late">El tablero del %1$s está hecho. Los días pasados no suman a la racha.</string>
     <string name="win_calendar">Calendario</string>
+
+    <!-- Hito 5: ayuda extra, anuncios, compra y privacidad -->
+    <string name="extra_title_hint">Sin pistas</string>
+    <string name="extra_title_shuffle">Sin barajadas</string>
+    <string name="extra_ad_hint">Mira un vídeo corto y consigue 1 pista más.</string>
+    <string name="extra_ad_shuffle">Mira un vídeo corto y consigue 1 barajada más.</string>
+    <string name="extra_watch">Ver vídeo</string>
+    <string name="extra_no_thanks">No, gracias</string>
+    <string name="extra_free_hint">Ahora no hay ningún vídeo, pero puedes usar una pista gratis. Pistas gratis que te quedan hoy: %1$d.</string>
+    <string name="extra_free_shuffle">Ahora no hay ningún vídeo, pero puedes usar una barajada gratis. Barajadas gratis que te quedan hoy: %1$d.</string>
+    <string name="extra_use_free_hint">Usar pista gratis</string>
+    <string name="extra_use_free_shuffle">Usar barajada gratis</string>
+    <string name="extra_none_hint">Por ahora no hay más pistas. Los vídeos necesitan conexión a internet, y mañana vuelves a tener pistas gratis.</string>
+    <string name="extra_none_shuffle">Por ahora no hay más barajadas. Los vídeos necesitan conexión a internet, y mañana vuelves a tener una barajada gratis.</string>
+    <string name="extra_undo_free">Deshacer y Reiniciar siempre son gratis.</string>
+    <string name="extra_ok">Entendido</string>
+
+    <string name="settings_ads">Anuncios</string>
+    <string name="remove_ads_button">Quitar anuncios · %1$s</string>
+    <string name="remove_ads_note">Un solo pago. Quita los anuncios que salen al acabar algunos tableros. Los vídeos para conseguir ayudas siguen siendo opcionales.</string>
+    <string name="remove_ads_owned">Los anuncios al acabar los tableros están quitados. ¡Gracias por tu apoyo!</string>
+    <string name="remove_ads_pending">Tu pago se está procesando. Los anuncios se quitarán en cuanto se complete.</string>
+    <string name="remove_ads_unavailable">La compra no está disponible ahora. Comprueba la conexión a internet y que has iniciado sesión en Google Play.</string>
+    <string name="restore_purchase">Restaurar compra</string>
+    <string name="purchase_restored">Compra restaurada. Los anuncios están quitados.</string>
+    <string name="purchase_not_found">No hay ninguna compra con esta cuenta de Google.</string>
+    <string name="purchase_store_unavailable">No se pudo conectar con Google Play. Inténtalo más tarde.</string>
+
+    <string name="settings_privacy">Privacidad</string>
+    <string name="privacy_policy">Política de privacidad</string>
+    <string name="privacy_options">Opciones de privacidad</string>
+    <string name="privacy_options_note">Cambia cómo pueden usar tus datos los anuncios.</string>
+    <string name="privacy_policy_url">https://ddsr1809.github.io/puzzlemahjon/privacy/es.html</string>
 </resources>

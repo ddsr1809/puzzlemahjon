@@ -24,17 +24,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
+import azulejo.app.billing.Ownership
+import azulejo.app.billing.PurchaseMessage
+import azulejo.app.billing.StoreState
 import azulejo.app.data.AppLanguage
 import azulejo.app.data.Settings
 import azulejo.app.data.TileSize
 
-/** Ajustes: tamaño de ficha, alto contraste e idioma. Cada cambio se aplica y se guarda al momento. */
+/** Lo que Ajustes enseña de los anuncios, la compra y la privacidad. */
+data class AdsSettings(
+    val adsRemoved: Boolean,
+    val store: StoreState,
+    val message: PurchaseMessage?,
+    val privacyOptionsRequired: Boolean,
+)
+
+/**
+ * Ajustes: tamaño de ficha, alto contraste, idioma, anuncios (quitarlos con la compra o
+ * restaurarla) y privacidad. Cada cambio se aplica y se guarda al momento.
+ */
 @Composable
 fun SettingsDialog(
     settings: Settings,
     onTileSize: (TileSize) -> Unit,
     onHighContrast: (Boolean) -> Unit,
     onLanguage: (AppLanguage) -> Unit,
+    ads: AdsSettings,
+    onBuyRemoveAds: () -> Unit,
+    onRestorePurchase: () -> Unit,
+    onPrivacyOptions: () -> Unit,
+    onPrivacyPolicy: () -> Unit,
     onClose: () -> Unit,
 ) {
     AlertDialog(
@@ -94,6 +113,25 @@ fun SettingsDialog(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+
+                Spacer(Modifier.height(16.dp))
+                SectionTitle(stringResource(R.string.settings_ads))
+                AdsSection(ads, onBuyRemoveAds, onRestorePurchase)
+
+                Spacer(Modifier.height(16.dp))
+                SectionTitle(stringResource(R.string.settings_privacy))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = onPrivacyPolicy, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                        Text(stringResource(R.string.privacy_policy), fontSize = 18.sp)
+                    }
+                    // Solo donde la normativa lo pide (Europa, algunos estados de EE. UU.).
+                    if (ads.privacyOptionsRequired) {
+                        OutlinedButton(onClick = onPrivacyOptions, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                            Text(stringResource(R.string.privacy_options), fontSize = 18.sp)
+                        }
+                        Note(stringResource(R.string.privacy_options_note))
+                    }
+                }
             }
         },
         confirmButton = {
@@ -102,6 +140,41 @@ fun SettingsDialog(
             }
         },
     )
+}
+
+/**
+ * Compra «Quitar anuncios». Con la compra hecha solo da las gracias; si no, el botón con el
+ * precio que da Google Play y «Restaurar compra» para quien ya pagó en otro teléfono.
+ */
+@Composable
+private fun AdsSection(ads: AdsSettings, onBuy: () -> Unit, onRestore: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        val price = ads.store.price
+        when {
+            ads.adsRemoved -> Text(stringResource(R.string.remove_ads_owned), fontSize = 18.sp)
+            ads.store.ownership == Ownership.PENDING -> Text(stringResource(R.string.remove_ads_pending), fontSize = 18.sp)
+            ads.store.canBuy && price != null -> {
+                Button(onClick = onBuy, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text(stringResource(R.string.remove_ads_button, price), fontSize = 18.sp)
+                }
+                Note(stringResource(R.string.remove_ads_note))
+            }
+            else -> Text(stringResource(R.string.remove_ads_unavailable), fontSize = 16.sp)
+        }
+        if (!ads.adsRemoved) {
+            OutlinedButton(onClick = onRestore, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                Text(stringResource(R.string.restore_purchase), fontSize = 18.sp)
+            }
+        }
+        ads.message?.let { message ->
+            val text = when (message) {
+                PurchaseMessage.RESTORED -> R.string.purchase_restored
+                PurchaseMessage.NOT_FOUND -> R.string.purchase_not_found
+                PurchaseMessage.STORE_UNAVAILABLE -> R.string.purchase_store_unavailable
+            }
+            Text(stringResource(text), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+    }
 }
 
 @Composable

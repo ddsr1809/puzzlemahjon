@@ -1,0 +1,13 @@
+/* Letra grande y alto contraste: el público del juego son adultos de 45 años o más. */
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 1.15rem; line-height: 1.6;
+       color: #1b1b1b; background: #ffffff; max-width: 44rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+h1 { font-size: 1.9rem; line-height: 1.25; margin-bottom: 0.25rem; color: #123a7a; }
+h2 { font-size: 1.35rem; margin-top: 2rem; color: #123a7a; }
+a { color: #0b4fb3; }
+.lang { float: right; font-size: 1rem; }
+.date { color: #444; margin-top: 0; }
+.summary { background: #eef3fb; border-left: 6px solid #123a7a; padding: 0.75rem 1.25rem; margin: 1.5rem 0; }
+.summary ul { margin: 0.25rem 0; padding-left: 1.25rem; }
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 1rem; }
+th, td { border: 1px solid #9aa7bd; padding: 0.5rem; text-align: left; vertical-align: top; }
+th { background: #eef3fb; }

@@ -3,6 +3,9 @@ package azulejo.app.data
 import azulejo.core.generator.Difficulty
 import azulejo.core.generator.LevelGenerator
 import azulejo.core.layouts.LayoutCatalog
+import azulejo.core.monetization.AdPacing
+import azulejo.core.monetization.HelpKind
+import azulejo.core.monetization.HelpQuota
 import azulejo.core.progress.CalendarDay
 import azulejo.core.progress.DailyResult
 import azulejo.core.progress.PlayerProgress
@@ -267,5 +270,46 @@ class AppStorageTest {
             PlayerProgress(dailyResults = mapOf(1 to DailyResult.LATE)),
             PlayerProgressCodec.decode("azulejo-progreso 1\nlevels=\ndaily=\nlate=1\n"),
         )
+    }
+
+    // ---------- Anuncios y compra ----------
+
+    @Test
+    fun `la primera vez no hay anuncios contados ni ayudas gastadas ni compra`() {
+        assertEquals(AdPacing(), storage.loadAdPacing())
+        assertEquals(HelpQuota(), storage.loadHelpQuota())
+        assertFalse(storage.loadRemoveAdsOwned())
+    }
+
+    @Test
+    fun `el ritmo de anuncios, la cuota y la compra se guardan y se recuperan`() {
+        val pacing = AdPacing(winsSinceAd = 1, totalWins = 9, lastAdAtMillis = 1_795_000_000_000L)
+        val today = CalendarDay.of(2026, 11, 18)
+        val quota = HelpQuota().use(HelpKind.HINT, today)!!
+        storage.saveAdPacing(pacing)
+        storage.saveHelpQuota(quota)
+        storage.saveRemoveAdsOwned(true)
+        val reopened = AppStorage(store)
+        assertEquals(pacing, reopened.loadAdPacing())
+        assertEquals(quota, reopened.loadHelpQuota())
+        assertTrue(reopened.loadRemoveAdsOwned())
+        storage.saveRemoveAdsOwned(false)
+        assertFalse(AppStorage(store).loadRemoveAdsOwned())
+    }
+
+    @Test
+    fun `las claves del hito 5 son fijas y un valor danado vuelve al de por defecto`() {
+        storage.saveAdPacing(AdPacing(totalWins = 3))
+        storage.saveHelpQuota(HelpQuota())
+        storage.saveRemoveAdsOwned(true)
+        assertEquals(setOf("ads.pacing", "help.quota", "purchase.removeAds"), store.values.keys)
+        assertEquals("on", store.values["purchase.removeAds"])
+
+        store.values["ads.pacing"] = "basura"
+        store.values["help.quota"] = "basura"
+        store.values["purchase.removeAds"] = "basura"
+        assertEquals(AdPacing(), storage.loadAdPacing())
+        assertEquals(HelpQuota(), storage.loadHelpQuota())
+        assertFalse(storage.loadRemoveAdsOwned())
     }
 }

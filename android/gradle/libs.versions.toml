@@ -2,12 +2,20 @@
 # - AGP 9.2.1 funciona en Android Studio Panda 4 (2025.3.4) y posteriores, y necesita Gradle 9.4.1+.
 # - Compose BOM 2026.08.00 (Compose 1.12) exige compileSdk 37 y AGP 9.1.1+.
 # - Desde Kotlin 2.0, el compilador de Compose lleva la misma versión que Kotlin.
+# Hito 5, comprobadas el 18 de noviembre de 2026:
+# - GMA Next-Gen SDK 1.6.0 (22 oct 2026): el SDK de anuncios que Google recomienda desde julio
+#   de 2026; el clásico (play-services-ads 25.x) pasó a «heredado». minSdk 24, compileSdk 35+.
+# - UMP 4.0.0: consentimiento (RGPD y estados de EE. UU.). minSdk 23.
+# - Play Billing Library 9.1.0 (18 jun 2026). Google Play exige la 8 o posterior.
 [versions]
 agp = "9.2.1"
 kotlin = "2.4.20"
 composeBom = "2026.08.00"
 activityCompose = "1.13.0"
 coroutines = "1.10.2"
+adsMobileSdk = "1.6.0"
+userMessagingPlatform = "4.0.0"
+playBilling = "9.1.0"
 
 [libraries]
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -18,6 +26,9 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+google-ads-mobile-sdk = { group = "com.google.android.libraries.ads.mobile.sdk", name = "ads-mobile-sdk", version.ref = "adsMobileSdk" }
+google-ump = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
+play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "playBilling" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 
 [plugins]

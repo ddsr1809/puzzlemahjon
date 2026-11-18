@@ -40,7 +40,8 @@ import azulejo.core.session.GameStatus
 
 /**
  * La partida: cabecera, tablero, avisos y botones de ayuda. Al ganar, un diálogo cuenta
- * qué se ha conseguido (azulejo del mural, racha…) y ofrece seguir.
+ * qué se ha conseguido (azulejo del mural, racha…) y ofrece seguir; si toca intersticial,
+ * sale antes del diálogo.
  */
 @Composable
 fun GameScreen(
@@ -96,14 +97,18 @@ fun GameScreen(
 
         if (session != null) {
             Text(
-                text = state.notice?.let { stringResource(it.textRes()) }
-                    ?: stringResource(R.string.tiles_left, session.board.remainingCount),
+                text = when {
+                    // Tablero vacío: mientras espera el anuncio o el aviso, se celebra aquí.
+                    session.status == GameStatus.WON -> stringResource(R.string.win_title)
+                    else -> state.notice?.let { stringResource(it.textRes()) }
+                        ?: stringResource(R.string.tiles_left, session.board.remainingCount)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
                     .padding(horizontal = 8.dp),
                 fontSize = 18.sp,
-                fontWeight = if (state.notice != null) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = if (state.notice != null || session.status == GameStatus.WON) FontWeight.Bold else FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground,
             )
@@ -121,8 +126,9 @@ fun GameScreen(
         }
     }
 
+    // Si toca intersticial, el aviso espera a que se cierre (GameUiState.showWinDialog).
     val win = state.win
-    if (session != null && session.status == GameStatus.WON && win != null) {
+    if (state.showWinDialog && win != null) {
         WinDialog(win, onWinAction)
     }
 }

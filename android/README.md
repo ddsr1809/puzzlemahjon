@@ -1,4 +1,4 @@
-# Solitario de azulejos — hito 4: niveles, reto diario y murales
+# Solitario de azulejos — hito 5: anuncios, compra y privacidad
 
 Dos módulos:
 
@@ -6,31 +6,35 @@ Dos módulos:
   de «ficha libre», 17 plantillas verticales (9 normales y 8 compactas), generador de
   niveles con solución garantizada (tres dificultades), solucionador, sesión de juego
   (tocar, deshacer, pista, barajar, reiniciar), guardado de la partida como texto y, desde
-  el hito 4, el progreso: los 200 niveles, el reto diario, las rachas y los murales.
+  el hito 4, el progreso: los 200 niveles, el reto diario, las rachas y los murales. Desde
+  el hito 5, también cuándo toca un anuncio y la cuota diaria de ayudas gratuitas.
 - **`app`**: la app de Android en Jetpack Compose. Pantalla de inicio, selector de
   niveles, calendario del reto, murales, la partida, las 36 fichas de azulejo, los ajustes
-  (tamaño de ficha, alto contraste, idioma), el guardado en el teléfono y el icono.
+  (tamaño de ficha, alto contraste, idioma), el guardado en el teléfono y el icono. Desde el
+  hito 5, los anuncios (AdMob), el consentimiento (UMP) y la compra «Quitar anuncios»
+  (Google Play Billing).
 
-## Novedades del hito 4
+La política de privacidad está en `docs/privacy/` (en la raíz del repositorio), lista para
+publicarla con GitHub Pages.
 
-- **Pantalla de inicio.** Continuar la partida a medias, jugar el siguiente nivel, el reto
-  diario, la lista de niveles, los murales y la partida rápida (la de antes, con tablero
-  al azar). El botón «Atrás» del teléfono vuelve siempre al inicio.
-- **200 niveles fijos.** El nivel 37 es el mismo tablero para todos los jugadores. Se
-  desbloquean en orden y los ganados se pueden repetir. Los 20 primeros son fáciles y la
-  dificultad sube por tramos (tabla en «Cómo funciona»).
-- **Murales.** Cada nivel ganado coloca un azulejo en uno de los 8 murales de 25 piezas.
-- **Reto diario.** Un tablero por día, el mismo para todos ese día. Se puede jugar
-  cualquier día pasado desde el calendario, pero solo el de hoy suma racha. Racha actual
-  y mejor racha.
-- **Fin de nivel.** Al ganar, un aviso dice qué azulejo se ha colocado o cómo va la racha
-  y ofrece el siguiente nivel. Ahí irá el anuncio intersticial del hito 5.
-- **Tamaño Grande.** Cada nivel y cada reto tienen también su versión con plantilla
-  compacta: el mismo número de nivel da un tablero en Normal y otro en Grande, los dos
-  siempre iguales.
+## Novedades del hito 5
 
-Tu partida y tus ajustes del hito 3 se conservan: la partida a medias aparece como
-«Partida rápida» en «Continuar».
+- **Anuncio al acabar algunos tableros.** Un intersticial justo al vaciar el tablero, antes del
+  aviso de victoria (nunca al empezar, durante la partida ni entre «Siguiente» y el tablero
+  nuevo). Los 5 primeros tableros ganados no llevan ninguno; después, como máximo uno cada 2
+  tableros y con 3 minutos como mínimo entre dos.
+- **Ayuda extra.** Sin pistas o sin barajadas, el juego ofrece ver un vídeo corto a cambio de
+  una más. Si no hay vídeo (sin conexión, por ejemplo), cada día hay 3 pistas y 1 barajada
+  gratis. Decir que no no cambia nada: deshacer y reiniciar siguen siendo gratis.
+- **Quitar anuncios.** Compra única en Ajustes que quita los intersticiales; los vídeos siguen
+  siendo opcionales. «Restaurar compra» la recupera en otro teléfono con la misma cuenta.
+- **Privacidad.** Mensaje de consentimiento donde la ley lo pide (Europa y estados de EE. UU.
+  con ley de privacidad) y, en esos lugares, «Opciones de privacidad» en Ajustes. «Política de
+  privacidad» en Ajustes abre la página pública.
+- **Política de privacidad y Seguridad de los datos.** La política en inglés y español
+  (`docs/privacy/`) y las respuestas para Play Console en `store/data-safety.md`.
+
+Todo lo guardado antes (partida, ajustes, progreso) se conserva.
 
 ## Requisitos
 
@@ -63,7 +67,7 @@ En Windows, `gradlew.bat` en lugar de `./gradlew`. En Android Studio, las mismas
 están en el panel Gradle: **core → Tasks → verification → test** y
 **app → Tasks → verification → testDebugUnitTest**.
 
-Son 117 pruebas en `core` y 50 en `app`, y tardan unos segundos. En cada ejecución se
+Son 128 pruebas en `core` y 58 en `app`, y tardan unos segundos. En cada ejecución se
 generan y resuelven más de 3.000 niveles (entre ellos los 200 niveles en los dos tamaños de
 ficha y un año de retos diarios), se juegan miles de acciones al azar y la partida se
 guarda y se recupera después de cada una.
@@ -82,29 +86,36 @@ core/src/main/kotlin/azulejo/core/
                PlayerProgress y PlayerProgressCodec (niveles ganados, retos, rachas),
                CalendarDay (fechas sin java.time)
   random/      SeededRandom: aleatoriedad reproducible
+  monetization/ AdPacing (cuándo toca intersticial), HelpQuota (ayudas gratuitas del día)
 app/src/main/kotlin/azulejo/app/
-  MainActivity.kt, AppLocale.kt
+  MainActivity.kt, AppLocale.kt, AzulejoApplication.kt (servicios que viven todo el proceso)
+  ads/         AdsConfig (identificadores), ConsentManager (UMP), AdsController (intersticial y
+               recompensado), ExtraHelpOffer (qué se ofrece sin pistas)
+  billing/     RemoveAdsStore (Google Play Billing), StoreState (estado de la compra)
   tiles/       TileArt (los 36 dibujos), TilePalette (colores), TilePainter (pintarlos)
   data/        Settings, GameMode (nivel, reto o rápida), WinOutcome (qué se apunta al
                ganar), AppStorage (qué se guarda), PrefsStore (dónde), LocalDate (hoy)
-  ui/          AzulejoApp: elige la pantalla y muestra los diálogos comunes
+  ui/          AzulejoApp: elige la pantalla, muestra los diálogos comunes y los anuncios;
+               PlatformActions: lo que necesita la actividad
   ui/home/     HomeScreen (inicio), LevelSelectScreen (los 200 niveles)
   ui/daily/    DailyScreen (racha y calendario), CalendarModel
   ui/collection/ MuralsScreen
-  ui/game/     GameViewModel, GameUiState, GameScreen, BoardView, BoardMetrics, GameNotice
+  ui/game/     GameViewModel, GameUiState, GameScreen, BoardView, BoardMetrics, GameNotice,
+               ExtraHelpDialog
   ui/common/   cabecera, botones y textos compartidos
   ui/settings/ SettingsDialog
   ui/theme/    colores y tema, normal y de alto contraste
 app/src/main/res/values/      textos en inglés
 app/src/main/res/values-es/   textos en español
 app/src/main/res/mipmap-*/, drawable/   icono de la app
-store/         icono de 512 px para la ficha de Google Play
+store/         icono de 512 px para la ficha de Google Play; data-safety.md (Play Console)
 tools/         make_icon.py: regenera el icono si cambias el diseño
+../docs/       web pública (GitHub Pages): política de privacidad en inglés y español
 ```
 
 `TileArt`, `TilePalette`, `Settings`, `GameMode`, `WinOutcome`, `AppStorage`, `BoardMetrics`,
-`GameNotice`, `GameUiState` y `CalendarModel` son Kotlin puro: se prueban en la JVM, sin
-emulador.
+`GameNotice`, `GameUiState`, `CalendarModel`, `ExtraHelpOffer` y `StoreState` son Kotlin puro:
+se prueban en la JVM, sin emulador.
 
 ## Uso
 
@@ -250,6 +261,32 @@ pero lo aparta en otra clave (`progress.unreadable`) para poder recuperarlo. Jun
 partida se guarda qué era (`game.mode`: `level:37`, `daily:20773` o `quick`); las partidas
 del hito 3, que no lo tienen, se recuperan como partida rápida.
 
+**Anuncios.** Se usa el SDK GMA Next-Gen de Google, el recomendado desde julio de 2026 (el
+clásico, `play-services-ads`, quedó como «heredado»). Al abrir la app, `MainActivity` pide al
+SDK de consentimiento (UMP) que ponga al día la respuesta del jugador y, si hace falta, le
+muestre el mensaje; los anuncios no se piden hasta que UMP lo permite. El intersticial y el
+vídeo se cargan por adelantado y se renuevan antes de caducar (a la hora); sin conexión se
+reintenta cada vez más tarde (de 30 s a 15 min).
+
+- **Intersticial.** `AdPacing` (en `core`) cuenta los tableros ganados de cualquier modo. Al
+  ganar, si toca y hay uno cargado, el aviso de victoria espera: el tablero vacío dice
+  «¡Tablero completado!», a los 1,2 s sale el anuncio y al cerrarlo, el aviso. La pausa evita
+  que un toque rápido acabe en el anuncio (AdMob lo trata como clic no válido). Si no había
+  ninguno cargado, se intenta en la siguiente victoria.
+- **Ayuda extra.** Pedir una pista o barajar sin quedar ninguna abre un diálogo: «Ver vídeo»
+  si hay uno cargado; si no, la cuota gratuita del día (`HelpQuota`: 3 pistas y 1 barajada); si
+  tampoco, una explicación. La ayuda conseguida se usa al momento (la pista aparece, el tablero
+  se baraja). El vídeo nunca sale solo.
+- **Identificadores.** El build de debug usa siempre los de prueba de Google. El de release
+  usa los de `gradle.properties` o, si faltan, también los de prueba (Gradle lo avisa).
+
+**Compra «Quitar anuncios».** Producto único `remove_ads`. `RemoveAdsStore` conecta con Google
+Play al abrir la app y al volver a ella, consulta el precio y si la cuenta ya la tiene, y
+confirma cada compra (sin confirmar, Google la reembolsa a los 3 días). El resultado se guarda
+en el teléfono (`purchase.removeAds`) para quitar los anuncios aunque Google Play aún no haya
+contestado; cuando contesta, manda Google Play (por ejemplo, tras un reembolso). No hay
+servidor que verifique las compras: para un producto que solo quita anuncios no compensa.
+
 **Reproducibilidad.** Plantilla + dificultad + semilla dan siempre el mismo nivel. La
 aleatoriedad sale de `SeededRandom` (SplitMix64 propio), no de `kotlin.random`, para que
 el resultado no dependa de la versión de Kotlin ni de la plataforma.
@@ -277,6 +314,9 @@ el resultado no dependa de la versión de Kotlin ni de la plataforma.
    diseño de un mural publicado. Una prueba fija el texto exacto.
 8. **Los 36 dibujos no cambian de número.** El generador reparte dibujos del 0 al 35; si
    reordenas las familias o los motivos, las partidas guardadas cambian de aspecto.
+9. **Los anuncios, nunca durante la partida.** El intersticial solo se decide en
+   `GameViewModel.apply` al ganar, y el vídeo solo sale al pulsar «Ver vídeo». No cambies el
+   id del producto `remove_ads`: las compras hechas se perderían.
 
 ## Rendimiento medido (JVM de escritorio)
 
@@ -285,6 +325,62 @@ el resultado no dependa de la versión de Kotlin ni de la plataforma.
 
 En un teléfono será varias veces más lento: por eso `GameViewModel` genera niveles y
 busca pistas fuera del hilo principal.
+
+## Anuncios y compra: lo que tienes que configurar
+
+Sin hacer nada, la app funciona con anuncios de prueba de Google y la compra aparece como «no
+disponible». Para los reales:
+
+**1. Publicar la política de privacidad** (hace falta para AdMob y para Play Console).
+
+1. Sube a GitHub la carpeta `docs/` (está en la raíz del repositorio, fuera de `android/`).
+2. En GitHub: *Settings → Pages → Build and deployment → Deploy from a branch*, rama `main`
+   (o `development` mientras pruebas) y carpeta `/docs`. Guarda.
+3. A los pocos minutos estará en `https://ddsr1809.github.io/puzzlemahjon/privacy/` (inglés) y
+   `…/privacy/es.html` (español). Son las direcciones que abre la app desde Ajustes. Si usas
+   otra, cámbiala en `privacy_policy_url` de los dos `strings.xml`.
+4. Revisa el texto: lleva tu nombre y el correo `damian@d2600.com` como contacto.
+
+**2. AdMob.**
+
+1. En [admob.google.com](https://admob.google.com), *Apps → Add app → Android*. A «¿Está
+   publicada en una tienda?» contesta que no (se enlaza con Google Play más adelante). Apunta el
+   **ID de la app** (`ca-app-pub-…~…`).
+2. En la app, *Ad units → Add ad unit*: uno **Interstitial** («Fin de tablero») y uno
+   **Rewarded** («Ayuda extra»; la recompensa que pongas en AdMob no importa: el juego siempre
+   da 1 pista o 1 barajada). Apunta los dos **ID de bloque** (`ca-app-pub-…/…`).
+3. *Privacy & messaging*: crea el mensaje **European regulations** (RGPD) y el de **US state
+   regulations**, con la URL de la política. Publícalos. Sin ellos, UMP no muestra nada.
+4. Opcional: *Blocking controls → Content* para limitar la categoría de los anuncios (por
+   ejemplo, «PG»), sin tocar el código.
+5. Pon los tres identificadores en `android/gradle.properties` (hay líneas de ejemplo
+   comentadas al final): quita el `#` y sustituye los valores.
+6. Registra tus teléfonos como **dispositivos de prueba** antes de instalar un build de release:
+   *AdMob → Settings → Test devices → Add test device* con el ID de publicidad del teléfono
+   (*Ajustes → Google → Anuncios*). También puedes poner en `azulejo.admob.testDevices` el ID
+   que el SDK escribe en Logcat. Pide lo mismo a tus testers o diles que no pulsen anuncios:
+   los clics no válidos pueden hacer que AdMob cierre la cuenta.
+
+**3. Producto en Play Console** (necesita un build ya subido a una pista).
+
+1. *Monetize with Play → Products → One-time products → Create*. ID del producto:
+   **`remove_ads`** (exactamente así). Nombre: «Remove ads» / «Quitar anuncios». Precio: el que
+   elijas (por ejemplo, 2,99 USD). Actívalo.
+2. *Settings → License testing*: añade tu cuenta y las de los testers. Sus compras son de
+   prueba y no se cobran.
+3. La compra solo funciona en la app instalada desde Google Play (el enlace de la pista
+   cerrada), no en la que instala Android Studio.
+
+**4. Seguridad de los datos.** Las respuestas para Play Console están en
+`store/data-safety.md`.
+
+## Probar el consentimiento
+
+En un build de debug puedes ver el mensaje europeo aunque estés en EE. UU.: en
+`gradle.properties` activa `azulejo.ump.forceEea=true` y pon el ID de tu teléfono en
+`azulejo.admob.testDevices` (los emuladores ya cuentan como de prueba). Para volver a ver el
+mensaje, borra los datos de la app (*Ajustes del teléfono → Apps → Azulejo Mahjong →
+Almacenamiento → Borrar datos*): también se borra tu progreso.
 
 ## Subir a la pista cerrada
 
@@ -318,36 +414,51 @@ Y una que sí se puede cambiar, pero conviene decidir: el nombre (`app_name` en 
 4. **Completa lo que pida el panel** antes de enviar a revisión: ficha de la tienda (el
    icono de 512 px está en `store/play-icon-512.png`; faltan el gráfico de 1024 × 500 y
    al menos dos capturas), política de privacidad, clasificación de contenido, público
-   objetivo y Seguridad de los datos.
+   objetivo, anuncios, ID de publicidad y Seguridad de los datos (respuestas en
+   `store/data-safety.md`).
 
 En cada build nuevo, sube `versionCode` en `app/build.gradle.kts`: Google Play rechaza un
 número repetido.
 
 ## Qué probar en el teléfono
 
-1. **Actualizar sin perder nada.** Instala encima de la versión del hito 3 (sin
-   desinstalar). Tu partida a medias aparece en «Continuar» como partida rápida, y los
-   ajustes siguen igual.
-2. **Niveles.** Juega el nivel 1 hasta ganarlo: el aviso dice «Un azulejo nuevo para el
-   mural 1: 1 de 25» y ofrece el nivel 2. En «Murales» aparece el azulejo colocado. En
-   «Niveles», el 1 lleva ✓, el 2 está resaltado y el 3 bloqueado.
-3. **Continuar.** Empieza un nivel, retira un par, vuelve al inicio con «Inicio» o con
-   «Atrás» y pulsa «Continuar». Pide luego otro nivel o el reto: pregunta antes de
-   abandonar la partida.
-4. **Reto diario.** Juega el de hoy: la racha pasa a 1 día y el día queda relleno en el
-   calendario. Juega un día pasado: queda con un aro y no suma racha.
-5. **Tamaño Grande.** Con un nivel sin empezar, cambia a Grande en Ajustes: el mismo nivel
-   pasa a su tablero compacto.
-6. **Calendario.** La semana empieza según la región del teléfono (domingo en EE. UU. y
-   México, lunes en España), en inglés y en español. El día de hoy es un cuadro redondeado;
-   los días hechos, un círculo relleno (ese mismo día) o un aro (otro día).
+Con el build de debug (anuncios de prueba, marcados «Test ad»):
 
-## Pendiente para el hito 5 y después
+1. **Actualizar sin perder nada.** Instala encima de la versión del hito 4 (sin desinstalar):
+   partida, ajustes y progreso siguen igual.
+2. **Sin anuncios al principio.** Gana 5 tableros (Fácil en partida rápida es lo más rápido):
+   ningún anuncio. El tablero vacío dice «¡Tablero completado!» y sale el aviso de victoria.
+3. **Intersticial.** Gana el 6.º: «¡Tablero completado!», un segundo después el anuncio y, al
+   cerrarlo, el aviso de victoria. El 7.º no lleva anuncio. Si ganas el 8.º antes de 3 minutos
+   desde el anterior, tampoco.
+4. **Ayuda extra con vídeo.** Gasta las 3 pistas y pide otra: «Sin pistas» ofrece «Ver vídeo».
+   Míralo entero: al cerrarlo aparece la pista marcada. Repite cerrando el vídeo antes de
+   tiempo: no hay pista. Igual con «Barajar».
+5. **Ayuda extra sin conexión.** Con el modo avión, pide una pista sin quedar ninguna: ofrece
+   «Usar pista gratis» (3 al día). Gasta las 3: la siguiente vez explica que no quedan.
+6. **Ajustes.** Aparecen «Anuncios» y «Privacidad». «Política de privacidad» abre la página
+   (cuando esté publicada). Sin el producto creado en Play Console, la compra dice «no está
+   disponible» y «Restaurar compra» contesta.
+7. **Atrás durante la pausa.** Gana un tablero que lleve anuncio y pulsa «Atrás» enseguida: no
+   sale el anuncio en el inicio.
 
-- Anuncios (UMP, intersticial al acabar un nivel, recompensado), compra para quitarlos,
-  política de privacidad y Seguridad de los datos.
+Con el build de la pista cerrada (instalado desde Google Play) y tu cuenta como tester de
+licencias:
+
+8. **Compra.** *Ajustes → Quitar anuncios · precio*: paga con la tarjeta de prueba. Ajustes da
+   las gracias y ya no salen intersticiales; los vídeos siguen ofreciéndose.
+9. **Restaurar.** Desinstala, instala de nuevo desde Google Play y abre Ajustes: la compra se
+   recupera sola (o con «Restaurar compra»).
+
+## Pendiente para el hito 6 y después
+
+- `app-ads.txt`: AdMob lo recomienda para no perder ingresos. Tiene que estar en la raíz del
+  sitio web de desarrollador que pongas en Google Play (por ejemplo, un repositorio
+  `ddsr1809.github.io`).
+- Enlazar la app de AdMob con su ficha de Google Play cuando esté publicada.
 - El tablero no se puede jugar con lector de pantalla (TalkBack): anuncia cuántas fichas
   quedan, pero no cada ficha. Las pantallas nuevas (inicio, niveles, calendario, murales)
   sí se pueden usar con TalkBack.
-- El código de `app` que usa Compose se compila por primera vez en tu máquina. Si algo
-  falla al sincronizar o compilar, el mensaje de error dice el archivo y la línea.
+- El código de `app` que usa Compose y los SDK de anuncios, consentimiento y compra se
+  compila por primera vez en tu máquina. Si algo falla al sincronizar o compilar, el mensaje
+  de error dice el archivo y la línea.

@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,23 +25,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import azulejo.app.R
-import azulejo.app.data.AppLanguage
 import azulejo.app.data.GameMode
 import azulejo.app.data.WinOutcome
 import azulejo.app.tiles.TilePalette
 import azulejo.app.ui.collection.MuralsScreen
 import azulejo.app.ui.daily.DailyScreen
+import azulejo.app.ui.game.ExtraHelpDialog
 import azulejo.app.ui.game.GameScreen
 import azulejo.app.ui.game.GameViewModel
 import azulejo.app.ui.game.Screen
 import azulejo.app.ui.game.WinAction
 import azulejo.app.ui.home.HomeScreen
 import azulejo.app.ui.home.LevelSelectScreen
+import azulejo.app.ui.settings.AdsSettings
 import azulejo.app.ui.settings.SettingsDialog
 import azulejo.app.ui.theme.AzulejoTheme
 import azulejo.core.generator.Difficulty
 import azulejo.core.progress.LevelCatalog
 import azulejo.core.progress.Murals
+import kotlinx.coroutines.delay
+
+/**
+ * Pausa entre vaciar el tablero y el intersticial: el jugador ve el tablero vacío y deja de
+ * tocar la pantalla, así no pulsa el anuncio sin querer (AdMob lo considera clic no válido).
+ */
+private const val INTERSTITIAL_DELAY_MILLIS = 1200L
 
 /** Partida pedida con otra a medias, a la espera de que el jugador confirme. */
 private sealed interface PendingStart {
@@ -54,11 +63,14 @@ private sealed interface PendingStart {
  *
  * El botón «Atrás» del teléfono lleva al inicio desde cualquier otra pantalla.
  *
- * @param onLanguageChange cambiar de idioma obliga a recrear la actividad, así que lo
- *   resuelve quien la tiene a mano (`MainActivity`).
+ * También coordina los anuncios: el intersticial al vaciar un tablero (cuando el ViewModel
+ * dice que toca) y el vídeo recompensado que el jugador pide para conseguir ayuda extra.
+ *
+ * @param platform lo que necesita la actividad (cambiar de idioma, anuncios, compra,
+ *   privacidad): lo resuelve `MainActivity`.
  */
 @Composable
-fun AzulejoApp(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit) {
+fun AzulejoApp(viewModel: GameViewModel, platform: PlatformActions) {
     val state by viewModel.state.collectAsState()
     // Ajustes sigue abierto tras cambiar de idioma, que recrea la actividad.
     var showSettings by rememberSaveable { mutableStateOf(false) }
@@ -77,6 +89,16 @@ fun AzulejoApp(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit
     fun showMurals(focus: Int?) {
         muralFocus = focus
         viewModel.show(Screen.MURALS)
+    }
+
+    // Intersticial: justo al completar el tablero, antes del aviso de victoria.
+    LaunchedEffect(state.interstitialPending) {
+        if (state.interstitialPending) {
+            delay(INTERSTITIAL_DELAY_MILLIS)
+            if (viewModel.beginInterstitial()) {
+                platform.showInterstitial { shown -> viewModel.onInterstitialFinished(shown) }
+            }
+        }
     }
 
     AzulejoTheme(highContrast = state.settings.highContrast) {
@@ -170,13 +192,42 @@ fun AzulejoApp(viewModel: GameViewModel, onLanguageChange: (AppLanguage) -> Unit
             )
         }
 
+        val extraHelp = state.extraHelp
+        if (state.screen == Screen.GAME && extraHelp != null) {
+            ExtraHelpDialog(
+                offer = extraHelp,
+                onWatchAd = {
+                    viewModel.onRewardedStarted()
+                    platform.showRewarded(
+                        onReward = { viewModel.onRewardEarned(extraHelp.kind) },
+                        onClosed = { shown -> viewModel.onRewardedClosed(extraHelp.kind, shown) },
+                    )
+                },
+                onUseFree = viewModel::useFreeHelp,
+                onDismiss = viewModel::dismissExtraHelp,
+            )
+        }
+
         if (showSettings) {
             SettingsDialog(
                 settings = state.settings,
                 onTileSize = viewModel::setTileSize,
                 onHighContrast = viewModel::setHighContrast,
-                onLanguage = onLanguageChange,
-                onClose = { showSettings = false },
+                onLanguage = platform::changeLanguage,
+                ads = AdsSettings(
+                    adsRemoved = state.adsRemoved,
+                    store = state.store,
+                    message = state.purchaseMessage,
+                    privacyOptionsRequired = state.privacyOptionsRequired,
+                ),
+                onBuyRemoveAds = { if (!platform.buyRemoveAds()) viewModel.onPurchaseUnavailable() },
+                onRestorePurchase = viewModel::restorePurchase,
+                onPrivacyOptions = platform::showPrivacyOptions,
+                onPrivacyPolicy = platform::openPrivacyPolicy,
+                onClose = {
+                    showSettings = false
+                    viewModel.clearPurchaseMessage()
+                },
             )
         }
     }
