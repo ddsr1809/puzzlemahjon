@@ -111,34 +111,11 @@ class LevelGenerator(private val faceCount: Int = DEFAULT_FACE_COUNT) {
     /** Paso 1: vaciar la plantilla sin dibujos y devolver el orden en que salieron los pares. */
     private fun dismantle(layout: Layout, geometry: BoardGeometry, random: SeededRandom): List<Move> {
         repeat(MAX_DISMANTLE_ATTEMPTS) {
-            tryDismantle(geometry, random)?.let { return it }
+            Dismantler.tryDismantle(geometry, BooleanArray(geometry.size) { true }, random)?.let { return it }
         }
         // Solo ocurre con plantillas que no se pueden vaciar (p. ej. una torre de dos fichas).
         // Las pruebas comprueban que ninguna plantilla del catálogo llega aquí.
         error("No se pudo vaciar la plantilla '${layout.id}' en $MAX_DISMANTLE_ATTEMPTS intentos")
-    }
-
-    private fun tryDismantle(geometry: BoardGeometry, random: SeededRandom): List<Move>? {
-        val present = BooleanArray(geometry.size) { true }
-        var remaining = geometry.size
-        val order = ArrayList<Move>(remaining / 2)
-        val free = ArrayList<Int>()
-
-        while (remaining > 0) {
-            free.clear()
-            for (index in 0 until geometry.size) {
-                if (present[index] && geometry.isFree(index) { present[it] }) free += index
-            }
-            if (free.size < 2) return null
-
-            val a = free.removeAt(random.nextInt(free.size))
-            val b = free[random.nextInt(free.size)]
-            present[a] = false
-            present[b] = false
-            remaining -= 2
-            order += Move.of(a, b)
-        }
-        return order
     }
 
     /** Paso 2: un dibujo por par, usando cada dibujo [pairsPerFace] veces. */
@@ -156,7 +133,8 @@ class LevelGenerator(private val faceCount: Int = DEFAULT_FACE_COUNT) {
 
         /**
          * Versión del algoritmo. Súbela si un cambio hace que la misma semilla dé otro
-         * tablero, y guárdala junto a las partidas en curso para poder reconocerlas.
+         * tablero. Las partidas en curso no dependen de ella: se guardan con los dibujos
+         * de cada ficha, no con la semilla (ver `GameSnapshot`).
          */
         const val VERSION = 1
 

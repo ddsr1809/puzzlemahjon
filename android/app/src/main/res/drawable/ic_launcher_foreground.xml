@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Primer plano del icono: estrella de azulejo dentro de un aro. Generado por tools/make_icon.py: no lo edites a mano. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M23.5,54a30.5,30.5 0 1,0 61,0a30.5,30.5 0 1,0 -61,0z"
+        android:strokeColor="#FFF8EA"
+        android:strokeWidth="2.5" />
+    <path
+        android:fillColor="#FFF8EA"
+        android:pathData="M54,29 L58.78,42.45 L71.68,36.32 L65.55,49.22 L79,54 L65.55,58.78 L71.68,71.68 L58.78,65.55 L54,79 L49.22,65.55 L36.32,71.68 L42.45,58.78 L29,54 L42.45,49.22 L36.32,36.32 L49.22,42.45 Z" />
+    <path
+        android:fillColor="#E3A21A"
+        android:pathData="M48,54a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+</vector>

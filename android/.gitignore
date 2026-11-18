@@ -8,3 +8,8 @@ captures/
 .DS_Store
 *.keystore
 *.jks
+# Bundles y APK firmados que genera Android Studio (Build > Generate Signed Bundle/APK).
+/app/release/
+*.aab
+*.apk
+keystore.properties

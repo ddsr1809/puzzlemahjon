@@ -61,6 +61,23 @@ class LevelGeneratorTest {
     }
 
     @Test
+    fun `todo nivel compacto tiene solucion y el solucionador lo resuelve`() {
+        for (difficulty in Difficulty.entries) {
+            for (layout in LayoutCatalog.forDifficulty(difficulty, compact = true)) {
+                for (seed in 1L..100L) {
+                    val level = generator.generate(layout, difficulty, seed)
+                    assertSolutionClearsBoard(level)
+                    assertFaceCounts(level)
+                    if (seed <= 20L) {
+                        val result = Solver.solve(level.board)
+                        assertTrue(result is SolveResult.Solved, "el solucionador no resolvió ${describe(level)}: $result")
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun `cualquier plantilla admite cualquier dificultad`() {
         for (layout in LayoutCatalog.all) {
             for (difficulty in Difficulty.entries) {
@@ -109,7 +126,7 @@ class LevelGeneratorTest {
 
     @Test
     fun `en facil es imposible quedar bloqueado`() {
-        for (layout in LayoutCatalog.easy) {
+        for (layout in LayoutCatalog.easy + LayoutCatalog.compactEasy) {
             for (seed in 1L..30L) {
                 val level = generator.generate(layout, Difficulty.EASY, seed)
                 assertEquals(1.0, level.randomWinRate)
@@ -124,7 +141,7 @@ class LevelGeneratorTest {
 
     @Test
     fun `en facil cada dibujo aparece exactamente dos veces`() {
-        for (layout in LayoutCatalog.easy) {
+        for (layout in LayoutCatalog.easy + LayoutCatalog.compactEasy) {
             val level = generator.generate(layout, Difficulty.EASY, 5)
             assertTrue(level.faces.groupingBy { it }.eachCount().values.all { it == 2 })
         }
@@ -132,7 +149,7 @@ class LevelGeneratorTest {
 
     @Test
     fun `dificil es mas exigente que media en la misma plantilla`() {
-        for (layout in LayoutCatalog.hard) {
+        for (layout in LayoutCatalog.hard + LayoutCatalog.compactHard) {
             val seeds = 1L..40L
             val medium = seeds.map { generator.generate(layout, Difficulty.MEDIUM, it).randomWinRate }.average()
             val hard = seeds.map { generator.generate(layout, Difficulty.HARD, it).randomWinRate }.average()
